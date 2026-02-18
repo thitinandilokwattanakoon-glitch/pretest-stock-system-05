@@ -2,6 +2,33 @@ const API_BASE = '/api';
 
 // State
 let chartInstance = null;
+let currentUser = null;
+
+// Auth Check
+async function checkAuth() {
+    try {
+        const response = await fetch(`${API_BASE}/auth_check.php`);
+        const data = await response.json();
+
+        if (!response.ok || !data.authenticated) {
+            window.location.href = 'login.html';
+        } else {
+            currentUser = data.user;
+            document.getElementById('user-name').innerText = currentUser.username;
+        }
+    } catch (error) {
+        window.location.href = 'login.html';
+    }
+}
+
+async function logout() {
+    try {
+        await fetch(`${API_BASE}/logout.php`);
+        window.location.href = 'login.html';
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
+}
 
 // Navigation
 function showPage(pageId) {
@@ -186,5 +213,6 @@ async function deleteProduct(id) {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
     loadDashboard();
 });
