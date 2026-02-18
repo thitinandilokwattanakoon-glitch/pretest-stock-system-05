@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Backoffice - PC Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-white flex-col hidden md:flex">
+            <div class="p-6 border-b border-slate-800">
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-blue-500"></i> Admin Panel
+                </h1>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="showSection('orders')" id="nav-orders"
+                    class="w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold flex items-center gap-3 transition">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Orders
+                </button>
+                <button onclick="showSection('warranty')" id="nav-warranty"
+                    class="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-3">
+                    <i class="fa-solid fa-tools"></i> RMA / Warranty
+                </button>
+                <button onclick="showSection('serials')" id="nav-serials"
+                    class="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-3">
+                    <i class="fa-solid fa-barcode"></i> Serial Numbers
+                </button>
+                <a href="index.html"
+                    class="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-3">
+                    <i class="fa-solid fa-store"></i> Back to Store
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden">
+            <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-6">
+                <h2 class="font-bold text-slate-700" id="page-title">Order Management</h2>
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                        A</div>
+                    <span class="text-sm font-medium">Administrator</span>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-6">
+
+                <!-- Orders Section -->
+                <div id="section-orders" class="space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                                <tr>
+                                    <th class="p-4">Order ID</th>
+                                    <th class="p-4">Customer</th>
+                                    <th class="p-4">Amount</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4">Date</th>
+                                    <th class="p-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="divide-y divide-slate-100 text-sm">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Warranty Section -->
+                <div id="section-warranty" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg">RMA Requests</h3>
+                        <button onclick="openRmaModal()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">New
+                            Request</button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-10 text-center text-slate-400">No active RMA requests.</div>
+                    </div>
+                </div>
+
+                <!-- Serials Section -->
+                <div id="section-serials" class="hidden space-y-6">
+                    <div class="flex gap-4 mb-4">
+                        <input type="text" placeholder="Scan Serial Number..."
+                            class="flex-1 border border-slate-300 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                        <button class="bg-slate-800 text-white px-6 py-2 rounded-lg font-medium">Search</button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <p class="text-slate-500 text-sm">Scan a product S/N to view warranty status and history.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="order-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Order Details <span id="modal-order-id" class="text-blue-600"></span></h3>
+                <button onclick="closeOrderModal()" class="text-slate-400 hover:text-red-500"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+                    <div>
+                        <p class="text-slate-500">Customer</p>
+                        <p class="font-medium" id="modal-customer"></p>
+                    </div>
+                    <div>
+                        <p class="text-slate-500">Address</p>
+                        <p class="font-medium" id="modal-address"></p>
+                    </div>
+                </div>
+
+                <table class="w-full text-sm mb-6">
+                    <thead class="bg-slate-50 text-slate-500">
+                        <tr>
+                            <th class="p-2 text-left">Product</th>
+                            <th class="p-2 text-right">Price</th>
+                            <th class="p-2 text-center">S/N</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-items-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button
+                        class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Print
+                        Invoice</button>
+                    <button
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Update
+                        Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

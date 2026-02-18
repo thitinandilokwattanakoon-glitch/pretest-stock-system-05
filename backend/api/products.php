@@ -15,10 +15,32 @@ switch ($method) {
             $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
             $stmt->execute([$_GET['id']]);
             $product = $stmt->fetch();
+            if ($product && $product['specs']) {
+                $product['specs'] = json_decode($product['specs']);
+            }
             echo json_encode($product);
         } else {
-            $stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
+            $category = isset($_GET['category']) ? $_GET['category'] : null;
+            $sql = "SELECT * FROM products";
+            if ($category) {
+                $sql .= " WHERE category = :category";
+            }
+            $sql .= " ORDER BY id DESC";
+            
+            $stmt = $pdo->prepare($sql);
+            if ($category) {
+                $stmt->bindParam(':category', $category);
+            }
+            $stmt->execute();
             $products = $stmt->fetchAll();
+            
+            // Decode JSON specs for each product
+            foreach ($products as &$product) {
+                if (isset($product['specs'])) {
+                    $product['specs'] = json_decode($product['specs']);
+                }
+            }
+            
             echo json_encode($products);
         }
         break;
@@ -26,12 +48,16 @@ switch ($method) {
     case 'POST':
         $data = json_decode(file_get_contents("php://input"));
         if (!empty($data->name) && !empty($data->category) && isset($data->price) && isset($data->quantity)) {
-            $sql = "INSERT INTO products (name, category, price, quantity, min_threshold, image_url) VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO products (model, name, category, price, quantity, min_threshold, image_url, specs, warranty_months) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $pdo->prepare($sql);
-            $min_threshold = isset($data->min_threshold) ? $data->min_threshold : 5;
-            $image_url = isset($data->image_url) ? $data->image_url : '';
             
-            if ($stmt->execute([$data->name, $data->category, $data->price, $data->quantity, $min_threshold, $image_url])) {
+            $model = $data->model ?? '';
+            $min_threshold = $data->min_threshold ?? 5;
+            $image_url = $data->image_url ?? '';
+            $specs = isset($data->specs) ? json_encode($data->specs) : null;
+            $warranty_months = $data->warranty_months ?? 12;
+
+            if ($stmt->execute([$model, $data->name, $data->category, $data->price, $data->quantity, $min_threshold, $image_url, $specs, $warranty_months])) {
                 http_response_code(201);
                 echo json_encode(["message" => "Product created successfully."]);
             } else {
@@ -47,23 +73,24 @@ switch ($method) {
     case 'PUT':
         $data = json_decode(file_get_contents("php://input"));
         if (!empty($data->id)) {
-            // Update logic - ensuring not to overwrite with nulls if fields are missing is better, but for simplicity:
-            // Fetch existing first
             $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
             $stmt->execute([$data->id]);
             $existing = $stmt->fetch();
 
             if ($existing) {
+                $model = $data->model ?? $existing['model'];
                 $name = $data->name ?? $existing['name'];
                 $category = $data->category ?? $existing['category'];
                 $price = $data->price ?? $existing['price'];
                 $quantity = $data->quantity ?? $existing['quantity'];
                 $min_threshold = $data->min_threshold ?? $existing['min_threshold'];
                 $image_url = $data->image_url ?? $existing['image_url'];
+                $specs = isset($data->specs) ? json_encode($data->specs) : $existing['specs'];
+                $warranty_months = $data->warranty_months ?? $existing['warranty_months'];
 
-                $sql = "UPDATE products SET name=?, category=?, price=?, quantity=?, min_threshold=?, image_url=? WHERE id=?";
+                $sql = "UPDATE products SET model=?, name=?, category=?, price=?, quantity=?, min_threshold=?, image_url=?, specs=?, warranty_months=? WHERE id=?";
                 $stmt = $pdo->prepare($sql);
-                if ($stmt->execute([$name, $category, $price, $quantity, $min_threshold, $image_url, $data->id])) {
+                if ($stmt->execute([$model, $name, $category, $price, $quantity, $min_threshold, $image_url, $specs, $warranty_months, $data->id])) {
                     echo json_encode(["message" => "Product updated successfully."]);
                 } else {
                     http_response_code(503);
@@ -77,7 +104,6 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        // Parse ID from URL query or body
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) {
              $data = json_decode(file_get_contents("php://input"));
@@ -85,7 +111,7 @@ switch ($method) {
         }
 
         if ($id) {
-            $stmt = $pdo->prepare("Delete FROM products WHERE id = ?");
+            $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
             if ($stmt->execute([$id])) {
                 echo json_encode(["message" => "Product deleted."]);
             } else {
