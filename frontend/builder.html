@@ -53,6 +53,16 @@
         <div class="w-full md:w-2/3 lg:w-3/4 overflow-y-auto p-6 scrollbar-hide">
             <div class="max-w-4xl mx-auto space-y-4">
 
+                <!-- Game Presets -->
+                <div class="mb-8">
+                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-gamepad"></i> Build for your favorite game
+                    </h2>
+                    <div id="game-presets" class="flex flex-col md:flex-row gap-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
                 <!-- Component Slots -->
                 <div id="slots-container" class="space-y-3">
                     <!-- Populated by JS -->
@@ -118,6 +128,7 @@
     </div>
 
     <script src="js/builder_logic.js"></script>
+    <script src="js/chat.js"></script>
 </body>
 
 </html>

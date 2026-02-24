@@ -12,10 +12,26 @@ const categories = [
     { id: 'case', name: 'Case', icon: 'fa-box' }
 ];
 
+const gamesData = [
+    { id: 'valorant', name: 'Valorant / CS:GO', tier: 'entry', icon: 'fa-crosshairs' },
+    { id: 'elden_ring', name: 'Elden Ring', tier: 'mid', icon: 'fa-dragon' },
+    { id: 'cyberpunk', name: 'Cyberpunk 2077', tier: 'high', icon: 'fa-robot' }
+];
+
+const compatibilityRules = {
+    formFactorOrder: ['ITX', 'M-ATX', 'ATX', 'E-ATX'],
+    isCaseCompatible: (caseForm, mbForm) => {
+        const cIdx = compatibilityRules.formFactorOrder.indexOf(caseForm);
+        const mIdx = compatibilityRules.formFactorOrder.indexOf(mbForm);
+        return cIdx >= mIdx;
+    }
+};
+
 const state = {
     components: {},
     products: [],
-    currentCategory: null
+    currentCategory: null,
+    suggestedTier: null
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,8 +39,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initBuilder() {
+    renderGameSelector();
     renderSlots();
     await fetchProducts();
+}
+
+function renderGameSelector() {
+    const container = document.getElementById('game-presets');
+    if (!container) return;
+
+    container.innerHTML = gamesData.map(game => `
+        <button onclick="applyGamePreset('${game.id}')" class="flex-1 bg-white border border-slate-200 p-3 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-left group">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-400 group-hover:text-blue-600 flex items-center justify-center">
+                    <i class="fa-solid ${game.icon}"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Best for</p>
+                    <h4 class="text-sm font-bold text-slate-800">${game.name}</h4>
+                </div>
+            </div>
+        </button>
+    `).join('');
+}
+
+function applyGamePreset(gameId) {
+    const game = gamesData.find(g => g.id === gameId);
+    if (!game) return;
+
+    state.suggestedTier = game.tier;
+
+    // Clear existing to ensure a fresh, clean auto-build
+    state.components = {};
+
+    // Auto-select loop
+    categories.forEach(cat => {
+        const { compatible, suggestions } = getCompatibleProducts(cat.name, cat.id);
+
+        let targetList = suggestions.length > 0 ? suggestions : compatible;
+
+        if (targetList.length > 0) {
+            // Pick the best one (usually most expensive in the tier for auto-build "best" experience)
+            const sorted = [...targetList].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+            state.components[cat.id] = sorted[0];
+        }
+    });
+
+    renderSlots();
+    alert(`Auto-Build completed for ${game.name}! We've selected the best compatible parts for the ${game.tier.toUpperCase()} tier.`);
 }
 
 async function fetchProducts() {
@@ -33,7 +95,8 @@ async function fetchProducts() {
         state.products = await response.json();
     } catch (error) {
         console.error('Error fetching products:', error);
-        alert('Failed to load products. Please check the backend.');
+        // Fallback for local testing without actual API
+        state.products = [];
     }
 }
 
@@ -41,6 +104,8 @@ function renderSlots() {
     const container = document.getElementById('slots-container');
     container.innerHTML = categories.map(cat => {
         const selected = state.components[cat.id];
+        const warning = checkItemCompatibility(cat.id, selected);
+
         return `
             <div class="component-slot bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex items-center gap-4 ${selected ? 'border-blue-500 ring-1 ring-blue-500' : ''}" onclick="openSelection('${cat.id}')">
                 <div class="w-12 h-12 rounded-lg ${selected ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'} flex items-center justify-center text-xl shrink-0">
@@ -50,6 +115,7 @@ function renderSlots() {
                     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">${cat.name}</p>
                     <h3 class="font-bold text-slate-800 truncate">${selected ? selected.name : 'Select ' + cat.name}</h3>
                     ${selected ? `<p class="text-xs text-blue-600 mt-0.5">${formatSpecs(selected)}</p>` : ''}
+                    ${warning ? `<p class="text-[10px] text-red-500 mt-1 font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> ${warning}</p>` : ''}
                 </div>
                 <div class="text-right">
                     ${selected ?
@@ -64,13 +130,42 @@ function renderSlots() {
     updateSummary();
 }
 
+function checkItemCompatibility(catId, selected) {
+    if (!selected) return null;
+
+    const cpu = state.components['cpu'];
+    const mb = state.components['mainboard'];
+    const gpu = state.components['gpu'];
+    const psu = state.components['psu'];
+    const pcCase = state.components['case'];
+    const ram = state.components['ram'];
+
+    // Real-time checks after selection
+    if (catId === 'mainboard') {
+        if (cpu && selected.specs?.socket !== cpu.specs?.socket) return "Socket mismatch with CPU!";
+        if (ram && selected.specs?.memory_type !== ram.specs?.type) return "RAM type mismatch!";
+        if (pcCase && !compatibilityRules.isCaseCompatible(pcCase.specs?.form_factor, selected.specs?.form_factor)) return "Mainboard too large for Case!";
+    }
+
+    if (catId === 'gpu' && pcCase) {
+        if (selected.specs?.length_mm > pcCase.specs?.max_gpu_length) return "GPU too long for Case!";
+    }
+
+    if (catId === 'psu') {
+        const totalTDP = calculateWattage();
+        if (selected.specs?.wattage < totalTDP + 100) return "Wattage may be insufficient!";
+    }
+
+    return null;
+}
+
 function openSelection(categoryId) {
     state.currentCategory = categoryId;
     const catDef = categories.find(c => c.id === categoryId);
     document.getElementById('modal-title').innerText = `Select ${catDef.name}`;
 
-    const compatible = getCompatibleProducts(catDef.name, categoryId);
-    renderProductList(compatible);
+    const { compatible, suggestions } = getCompatibleProducts(catDef.name, categoryId);
+    renderProductList(compatible, suggestions);
 
     document.getElementById('selection-modal').classList.remove('hidden');
 }
@@ -80,69 +175,97 @@ function closeModal() {
 }
 
 function getCompatibleProducts(categoryName, categoryId) {
-    // Determine DB Category
     let dbCategory = categoryName;
-    if (categoryId === 'ram') dbCategory = 'RAM'; // Ensure match
-    if (categoryId === 'ssd') dbCategory = 'SSD'; // Ensure match
+    if (categoryId === 'ram') dbCategory = 'RAM';
+    if (categoryId === 'ssd') dbCategory = 'SSD';
 
-    // Basic filter by category
     let available = state.products.filter(p => p.category === dbCategory || p.category.toLowerCase() === categoryName.toLowerCase());
 
-    // Compatibility Logic
     const cpu = state.components['cpu'];
     const mb = state.components['mainboard'];
-    const ram = state.components['ram']; // corrected access
+    const ram = state.components['ram'];
+    const pcCase = state.components['case'];
 
-    // 1. CPU <-> Mainboard (Socket)
-    if (categoryId === 'mainboard' && cpu) {
-        available = available.filter(p => p.specs?.socket === cpu.specs?.socket);
+    // Pre-filtering in Choice Modal
+    if (categoryId === 'mainboard') {
+        if (cpu) available = available.filter(p => p.specs?.socket === cpu.specs?.socket);
+        if (ram) available = available.filter(p => p.specs?.memory_type === ram.specs?.type);
+        if (pcCase) available = available.filter(p => compatibilityRules.isCaseCompatible(pcCase.specs?.form_factor, p.specs?.form_factor));
     }
+
     if (categoryId === 'cpu' && mb) {
         available = available.filter(p => p.specs?.socket === mb.specs?.socket);
     }
 
-    // 2. RAM <-> Mainboard (DDR Type)
     if (categoryId === 'ram' && mb) {
         available = available.filter(p => p.specs?.type === mb.specs?.memory_type);
     }
-    if (categoryId === 'mainboard' && ram) {
-        available = available.filter(p => p.specs?.memory_type === ram.specs?.type);
+
+    if (categoryId === 'case' && mb) {
+        available = available.filter(p => compatibilityRules.isCaseCompatible(p.specs?.form_factor, mb.specs?.form_factor));
     }
 
-    return available;
+    // Sort by tier if suggested
+    let suggestions = [];
+    if (state.suggestedTier) {
+        suggestions = available.filter(p => isProductInTier(p, state.suggestedTier));
+    }
+
+    return { compatible: available, suggestions };
 }
 
-function renderProductList(products) {
+function isProductInTier(p, tier) {
+    const price = parseFloat(p.price);
+    if (tier === 'entry') return price < 10000;
+    if (tier === 'mid') return price >= 10000 && price < 25000;
+    if (tier === 'high') return price >= 25000;
+    return false;
+}
+
+function renderProductList(products, suggestions) {
     const list = document.getElementById('product-list');
     if (products.length === 0) {
         list.innerHTML = `<div class="text-center py-10 text-slate-400">No compatible products found in stock.</div>`;
         return;
     }
 
-    list.innerHTML = products.map(p => {
-        const specsStr = formatSpecs(p);
-        return `
-            <div onclick="selectProduct(${p.id})" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-blue-400 cursor-pointer transition mb-3 flex justify-between items-center group">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-box text-slate-300 group-hover:text-blue-500 transition"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800">${p.name}</h4>
-                        <p class="text-xs text-slate-500 mt-1">${specsStr}</p>
-                        <div class="mt-1 flex gap-2">
-                             <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600">Stock: ${p.quantity}</span>
-                             ${p.warranty_months ? `<span class="text-[10px] bg-green-50 px-2 py-0.5 rounded text-green-600">Warranty: ${p.warranty_months}m</span>` : ''}
-                        </div>
-                    </div>
+    let html = '';
+
+    if (suggestions.length > 0) {
+        html += `<h5 class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-star"></i> Recommended for Tier: ${state.suggestedTier.toUpperCase()}</h5>`;
+        html += suggestions.map(p => renderProductCard(p, true)).join('');
+        html += `<div class="h-px bg-slate-200 my-6"></div>`;
+        html += `<h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">All Compatible Products</h5>`;
+    }
+
+    html += products.filter(p => !suggestions.includes(p)).map(p => renderProductCard(p, false)).join('');
+    list.innerHTML = html;
+}
+
+function renderProductCard(p, isSuggested) {
+    const specsStr = formatSpecs(p);
+    return `
+        <div onclick="selectProduct(${p.id})" class="bg-white p-4 rounded-xl border ${isSuggested ? 'border-blue-400 bg-blue-50/30' : 'border-slate-200'} hover:border-blue-400 cursor-pointer transition mb-3 flex justify-between items-center group relative overflow-hidden">
+            ${isSuggested ? '<div class="absolute top-0 right-0 bg-blue-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">TOP PICK</div>' : ''}
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-box text-slate-300 group-hover:text-blue-500 transition"></i>
                 </div>
-                <div class="text-right">
-                    <p class="font-bold text-blue-600 text-lg">฿${parseFloat(p.price).toLocaleString()}</p>
-                    <button class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-medium group-hover:bg-blue-600 group-hover:text-white transition mt-1">Select</button>
+                <div class="min-w-0">
+                    <h4 class="font-bold text-slate-800 truncate">${p.name}</h4>
+                    <p class="text-xs text-slate-500 mt-1">${specsStr}</p>
+                    <div class="mt-1 flex gap-2">
+                        <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600">Stock: ${p.quantity}</span>
+                        ${p.warranty_months ? `<span class="text-[10px] bg-green-50 px-2 py-0.5 rounded text-green-600">Warranty: ${p.warranty_months}m</span>` : ''}
+                    </div>
                 </div>
             </div>
-        `;
-    }).join('');
+            <div class="text-right shrink-0">
+                <p class="font-bold text-blue-600 text-lg">฿${parseFloat(p.price).toLocaleString()}</p>
+                <button class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-medium group-hover:bg-blue-600 group-hover:text-white transition mt-1">Select</button>
+            </div>
+        </div>
+    `;
 }
 
 function selectProduct(id) {
@@ -193,9 +316,9 @@ function updateSummary() {
     document.getElementById('header-total-price').innerText = total.toLocaleString();
     document.getElementById('summary-total-price').innerText = total.toLocaleString();
 
-    const filled = Object.keys(state.components).length;
+    const filledCount = Object.keys(state.components).length;
     const totalSlots = categories.length;
-    document.getElementById('progress-bar').style.width = `${(filled / totalSlots) * 100}%`;
+    document.getElementById('progress-bar').style.width = `${(filledCount / totalSlots) * 100}%`;
 }
 
 function proceedToCheckout() {
@@ -214,7 +337,7 @@ function proceedToCheckout() {
 }
 
 function calculateWattage() {
-    let watts = 50;
+    let watts = 50; // Motherboard + Fans base
     const cpu = state.components['cpu'];
     const gpu = state.components['gpu'];
 
@@ -228,11 +351,12 @@ function formatSpecs(product) {
     if (!product.specs) return '';
     const s = product.specs;
     if (product.category === 'CPU') return `${s.socket} | ${s.cores}C/${s.threads}T | ${s.base_clock}`;
-    if (product.category === 'Mainboard') return `${s.socket} | ${s.chipset} | ${s.memory_type}`;
+    if (product.category === 'Mainboard') return `${s.socket} | ${s.chipset} | ${s.form_factor} | ${s.memory_type}`;
     if (product.category === 'RAM') return `${s.type} | ${s.capacity} | ${s.speed}`;
-    if (product.category === 'GPU') return `${s.chipset} | ${s.memory}`;
+    if (product.category === 'GPU') return `${s.chipset} | ${s.memory} | ${s.length_mm}mm`;
     if (product.category === 'PSU') return `${s.wattage}W | ${s.certification}`;
-    if (product.category === 'Case') return `${s.form_factor}`;
+    if (product.category === 'Case') return `${s.form_factor} | Max GPU: ${s.max_gpu_length}mm`;
     if (product.category === 'SSD') return `${s.capacity} | ${s.interface}`;
     return '';
 }
+
