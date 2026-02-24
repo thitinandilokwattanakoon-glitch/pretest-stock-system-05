@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สินค้าทั้งหมด - iHaveSTOCK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+
+        .ihave-gold {
+            color: #ffd43b;
+        }
+
+        .ihave-gold-bg {
+            background-color: #ffd43b;
+        }
+
+        .gradient-text {
+            background: linear-gradient(45deg, #ffd43b, #ffec99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-nav {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 212, 59, 0.1);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #111111;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: calc(100vh - 72px);
+        }
+
+        .cat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .cat-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .cat-item.active {
+            color: #ffd43b;
+            background: rgba(255, 212, 59, 0.05);
+            border-left-color: #ffd43b;
+            font-weight: 600;
+        }
+
+        .cat-item .cat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .cat-item.active .cat-icon {
+            background: rgba(255, 212, 59, 0.15);
+            color: #ffd43b;
+        }
+
+        .cat-item .cat-count {
+            margin-left: auto;
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .cat-item.active .cat-count {
+            background: rgba(255, 212, 59, 0.15);
+            color: #ffd43b;
+        }
+
+        /* Product Cards */
+        .product-card {
+            background: #151515;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            border-color: rgba(255, 212, 59, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .product-card .product-img {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Category-specific gradient backgrounds for product images */
+        .product-img.cat-CPU {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .product-img.cat-GPU {
+            background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
+        }
+
+        .product-img.cat-Mainboard {
+            background: linear-gradient(135deg, #0a1a1a 0%, #1a2e2e 100%);
+        }
+
+        .product-img.cat-RAM {
+            background: linear-gradient(135deg, #1a1a0a 0%, #2e2e1a 100%);
+        }
+
+        .product-img.cat-SSD {
+            background: linear-gradient(135deg, #1a0a0a 0%, #2e1a1a 100%);
+        }
+
+        .product-img.cat-PSU {
+            background: linear-gradient(135deg, #0a1a0a 0%, #1a2e1a 100%);
+        }
+
+        .product-img.cat-Case {
+            background: linear-gradient(135deg, #111118 0%, #1a1a28 100%);
+        }
+
+        .product-img.cat-Cooler {
+            background: linear-gradient(135deg, #0a1520 0%, #102030 100%);
+        }
+
+        .product-img.cat-Monitor {
+            background: linear-gradient(135deg, #150a1a 0%, #251a2e 100%);
+        }
+
+        .product-img.cat-GamingGear {
+            background: linear-gradient(135deg, #1a100a 0%, #2e1a0a 100%);
+        }
+
+        .product-img .product-icon-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.4s ease;
+        }
+
+        .product-card:hover .product-icon-wrap {
+            transform: scale(1.08);
+        }
+
+        .product-img .product-icon-main {
+            font-size: 56px;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-card:hover .product-img .product-icon-main {
+            opacity: 0.85;
+        }
+
+        .product-img .product-brand {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.4;
+        }
+
+        .product-card .product-info {
+            padding: 14px 16px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card .product-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 36px;
+        }
+
+        .product-card .product-specs {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 6px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .product-card .product-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .product-card .product-price {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffd43b;
+        }
+
+        .product-card .add-cart-btn {
+            background: rgba(255, 212, 59, 0.12);
+            border: 1px solid rgba(255, 212, 59, 0.2);
+            color: #ffd43b;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .product-card .add-cart-btn:hover {
+            background: #ffd43b;
+            color: #000;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(255, 212, 59, 0.3);
+        }
+
+        .product-card .add-cart-btn.added {
+            background: #4ade80;
+            border-color: #4ade80;
+            color: #000;
+        }
+
+        .product-card .product-stock {
+            font-size: 10px;
+            color: #4ade80;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .product-card .product-stock.low {
+            color: #fb923c;
+        }
+
+        .product-card .product-stock.out {
+            color: #f87171;
+        }
+
+        /* Warranty badge */
+        .warranty-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 212, 59, 0.15);
+            border: 1px solid rgba(255, 212, 59, 0.2);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #ffd43b;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Builder CTA */
+        .builder-cta {
+            margin: 16px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(255, 212, 59, 0.1), rgba(255, 212, 59, 0.05));
+            border: 1px solid rgba(255, 212, 59, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .builder-cta:hover {
+            background: linear-gradient(135deg, rgba(255, 212, 59, 0.2), rgba(255, 212, 59, 0.1));
+            border-color: rgba(255, 212, 59, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .builder-cta .cta-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 212, 59, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd43b;
+            flex-shrink: 0;
+        }
+
+        .builder-cta .cta-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffd43b;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 212, 59, 0.3);
+            border-radius: 16px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .toast .toast-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(74, 222, 128, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4ade80;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .toast .toast-text {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .toast .toast-text strong {
+            font-weight: 700;
+            color: #ffd43b;
+        }
+
+        /* Cart badge floating */
+        .cart-floating {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #ffd43b, #f59e0b);
+            color: #000;
+            padding: 14px 28px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 8px 30px rgba(255, 212, 59, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+        }
+
+        .cart-floating.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .cart-floating:hover {
+            box-shadow: 0 12px 40px rgba(255, 212, 59, 0.6);
+            transform: translateX(-50%) translateY(-3px);
+        }
+
+        .cart-floating .cart-count-badge {
+            background: #000;
+            color: #ffd43b;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Mobile sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 40;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 72px;
+                width: 280px;
+                z-index: 50;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="glass-nav sticky top-0 z-[100] px-6 py-4">
+        <div class="max-w-[1600px] mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="text-2xl font-bold tracking-tighter flex items-center gap-2">
+                    <span class="gradient-text">iHave</span> STOCK
+                </a>
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="index.html"
+                        class="text-slate-400 hover:text-[#ffd43b] transition font-bold text-sm uppercase tracking-widest">หน้าแรก</a>
+                    <a href="products.html"
+                        class="ihave-gold font-bold text-sm uppercase tracking-widest">สินค้าทั้งหมด</a>
+                    <a href="builder.html"
+                        class="text-slate-400 hover:text-[#ffd43b] transition font-bold text-sm uppercase tracking-widest">จัดสเปคคอม</a>
+                    <a href="dashboard.html"
+                        class="text-slate-500 hover:text-white transition text-[10px] border border-white/10 px-2 py-0.5 rounded uppercase font-bold">Admin</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-[#ffd43b] transition text-xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <a href="login.html" class="text-slate-300 hover:text-white transition text-xl"><i
+                        class="fa-solid fa-circle-user"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex max-w-[1600px] mx-auto">
+        <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar w-[260px] flex-shrink-0 sticky top-[72px] self-start overflow-y-auto"
+            style="max-height: calc(100vh - 72px);">
+            <div class="py-4">
+                <p class="px-5 text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">หมวดหมู่สินค้า</p>
+                <div id="category-list"></div>
+            </div>
+            <div class="border-t border-white/5 mx-4"></div>
+            <a href="builder.html" class="builder-cta">
+                <div class="cta-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <div class="cta-text">จัดสเปคคอมของคุณเอง</div>
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 id="category-title" class="text-3xl font-bold"></h2>
+                    <p id="category-subtitle" class="text-sm text-slate-500 mt-1"></p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="product-count" class="text-xs text-slate-500"></span>
+                    <select id="sort-select"
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-slate-300 focus:outline-none focus:border-[#ffd43b] transition cursor-pointer">
+                        <option value="price-asc">ราคาต่ำ → สูง</option>
+                        <option value="price-desc">ราคาสูง → ต่ำ</option>
+                        <option value="name-asc">ชื่อ A-Z</option>
+                        <option value="name-desc">ชื่อ Z-A</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+
+            <div id="loading-state" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div class="product-card">
+                    <div class="product-img" style="background:#1a1a1a">
+                        <div class="skeleton w-full h-full"></div>
+                    </div>
+                    <div class="product-info">
+                        <div class="skeleton h-4 w-3/4 mb-2"></div>
+                        <div class="skeleton h-3 w-full mb-3"></div>
+                        <div class="skeleton h-6 w-1/2"></div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img" style="background:#1a1a1a">
+                        <div class="skeleton w-full h-full"></div>
+                    </div>
+                    <div class="product-info">
+                        <div class="skeleton h-4 w-3/4 mb-2"></div>
+                        <div class="skeleton h-3 w-full mb-3"></div>
+                        <div class="skeleton h-6 w-1/2"></div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img" style="background:#1a1a1a">
+                        <div class="skeleton w-full h-full"></div>
+                    </div>
+                    <div class="product-info">
+                        <div class="skeleton h-4 w-3/4 mb-2"></div>
+                        <div class="skeleton h-3 w-full mb-3"></div>
+                        <div class="skeleton h-6 w-1/2"></div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img" style="background:#1a1a1a">
+                        <div class="skeleton w-full h-full"></div>
+                    </div>
+                    <div class="product-info">
+                        <div class="skeleton h-4 w-3/4 mb-2"></div>
+                        <div class="skeleton h-3 w-full mb-3"></div>
+                        <div class="skeleton h-6 w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="empty-state" class="hidden text-center py-20">
+                <i class="fa-solid fa-box-open text-5xl text-slate-700 mb-4"></i>
+                <p class="text-slate-500 text-lg">ไม่พบสินค้าในหมวดนี้</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-icon"><i class="fa-solid fa-check"></i></div>
+        <div class="toast-text" id="toast-text"></div>
+    </div>
+
+    <!-- Floating Cart Button -->
+    <div id="cart-floating" class="cart-floating" onclick="window.location.href='checkout.html'">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>ดูตะกร้า</span>
+        <div class="cart-count-badge" id="cart-count-badge">0</div>
+    </div>
+
+    <script>
+        const categoryDefs = [
+            { id: 'CPU', name: 'CPU', icon: 'fa-microchip', desc: 'ซีพียู / โปรเซสเซอร์', iconColor: '#60a5fa' },
+            { id: 'Mainboard', name: 'Mainboard', icon: 'fa-chess-board', desc: 'เมนบอร์ด', iconColor: '#34d399' },
+            { id: 'GPU', name: 'Graphics Card', icon: 'fa-gamepad', desc: 'การ์ดจอ', iconColor: '#a78bfa' },
+            { id: 'RAM', name: 'RAM', icon: 'fa-memory', desc: 'แรม / หน่วยความจำ', iconColor: '#fbbf24' },
+            { id: 'SSD', name: 'Storage', icon: 'fa-hard-drive', desc: 'SSD / ฮาร์ดดิสก์', iconColor: '#f87171' },
+            { id: 'PSU', name: 'Power Supply', icon: 'fa-plug', desc: 'พาวเวอร์ซัพพลาย', iconColor: '#4ade80' },
+            { id: 'Cooler', name: 'Cooling System', icon: 'fa-fan', desc: 'ระบบระบายความร้อน', iconColor: '#38bdf8' },
+            { id: 'Case', name: 'Case', icon: 'fa-box', desc: 'เคสคอมพิวเตอร์', iconColor: '#818cf8' },
+            { id: 'Monitor', name: 'Monitor', icon: 'fa-desktop', desc: 'จอมอนิเตอร์', iconColor: '#e879f9' },
+            { id: 'GamingGear', name: 'Gaming Gear', icon: 'fa-keyboard', desc: 'เมาส์ / คีย์บอร์ด / หูฟัง', iconColor: '#fb923c' }
+        ];
+
+        const catIconMap = {};
+        const catColorMap = {};
+        categoryDefs.forEach(c => { catIconMap[c.id] = c.icon; catColorMap[c.id] = c.iconColor; });
+
+        let allProducts = [];
+        let currentCategory = 'CPU';
+        let currentSort = 'price-asc';
+
+        // Cart management
+        function getCart() {
+            try { return JSON.parse(localStorage.getItem('pc_build_cart') || '[]'); }
+            catch { return []; }
+        }
+
+        function saveCart(cart) {
+            localStorage.setItem('pc_build_cart', JSON.stringify(cart));
+            updateCartBadge();
+        }
+
+        function addToCart(productId) {
+            const product = allProducts.find(p => p.id == productId);
+            if (!product) return;
+
+            let cart = getCart();
+            // Check if already in cart
+            const exists = cart.find(item => item.id == productId);
+            if (exists) {
+                showToast(`<strong>${product.name}</strong> อยู่ในตะกร้าแล้ว`, 'warning');
+                return;
+            }
+
+            cart.push(product);
+            saveCart(cart);
+
+            // Animate button
+            const btn = document.getElementById('cart-btn-' + productId);
+            if (btn) {
+                btn.classList.add('added');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                setTimeout(() => {
+                    btn.classList.remove('added');
+                    btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i>';
+                }, 1500);
+            }
+
+            showToast(`เพิ่ม <strong>${product.name}</strong> ลงตะกร้าแล้ว`);
+        }
+
+        function updateCartBadge() {
+            const cart = getCart();
+            const badge = document.getElementById('cart-count-badge');
+            const floating = document.getElementById('cart-floating');
+            badge.textContent = cart.length;
+            if (cart.length > 0) {
+                floating.classList.add('show');
+            } else {
+                floating.classList.remove('show');
+            }
+        }
+
+        function showToast(html, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = toast.querySelector('.toast-icon');
+            document.getElementById('toast-text').innerHTML = html;
+
+            if (type === 'warning') {
+                icon.style.background = 'rgba(251, 191, 36, 0.15)';
+                icon.style.color = '#fbbf24';
+                icon.innerHTML = '<i class="fa-solid fa-exclamation"></i>';
+            } else {
+                icon.style.background = 'rgba(74, 222, 128, 0.15)';
+                icon.style.color = '#4ade80';
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            }
+
+            toast.classList.add('show');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderSidebar();
+            updateCartBadge();
+            await fetchAllProducts();
+
+            // Check URL param
+            const urlCat = new URLSearchParams(window.location.search).get('category');
+            if (urlCat && categoryDefs.some(c => c.id === urlCat)) {
+                currentCategory = urlCat;
+            }
+
+            selectCategory(currentCategory);
+
+            document.getElementById('sort-select').addEventListener('change', function () {
+                currentSort = this.value;
+                renderProducts();
+            });
+        });
+
+        async function fetchAllProducts() {
+            try {
+                const res = await fetch('/api/products.php');
+                allProducts = await res.json();
+            } catch (e) {
+                console.error('Error fetching products:', e);
+                allProducts = [];
+            }
+        }
+
+        function renderSidebar() {
+            document.getElementById('category-list').innerHTML = categoryDefs.map(cat => `
+                <div class="cat-item ${cat.id === currentCategory ? 'active' : ''}" data-category="${cat.id}" onclick="selectCategory('${cat.id}')">
+                    <div class="cat-icon"><i class="fa-solid ${cat.icon}"></i></div>
+                    <span>${cat.name}</span>
+                    <span class="cat-count" id="count-${cat.id}">-</span>
+                </div>
+            `).join('');
+        }
+
+        function selectCategory(catId) {
+            currentCategory = catId;
+            document.querySelectorAll('.cat-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.category === catId);
+            });
+            const catDef = categoryDefs.find(c => c.id === catId);
+            document.getElementById('category-title').textContent = catDef.name;
+            document.getElementById('category-subtitle').textContent = catDef.desc;
+
+            // Update counts
+            categoryDefs.forEach(cat => {
+                const count = allProducts.filter(p => p.category === cat.id).length;
+                const el = document.getElementById('count-' + cat.id);
+                if (el) el.textContent = count;
+            });
+
+            renderProducts();
+            closeSidebar();
+        }
+
+        function getBrandFromName(name) {
+            const n = name.toUpperCase();
+            if (n.includes('INTEL') || n.includes('CORE I')) return 'INTEL';
+            if (n.includes('AMD') || n.includes('RYZEN')) return 'AMD';
+            if (n.includes('ASUS') || n.includes('ROG') || n.includes('TUF')) return 'ASUS';
+            if (n.includes('MSI') || n.includes('MAG')) return 'MSI';
+            if (n.includes('GIGABYTE') || n.includes('AORUS')) return 'GIGABYTE';
+            if (n.includes('CORSAIR')) return 'CORSAIR';
+            if (n.includes('G.SKILL') || n.includes('GSKILL')) return 'G.SKILL';
+            if (n.includes('KINGSTON') || n.includes('FURY')) return 'KINGSTON';
+            if (n.includes('SAMSUNG')) return 'SAMSUNG';
+            if (n.includes('CRUCIAL')) return 'CRUCIAL';
+            if (n.includes('WD') || n.includes('WESTERN')) return 'WD';
+            if (n.includes('NZXT')) return 'NZXT';
+            if (n.includes('NOCTUA')) return 'NOCTUA';
+            if (n.includes('DEEPCOOL')) return 'DEEPCOOL';
+            if (n.includes('COOLER MASTER')) return 'COOLER MASTER';
+            if (n.includes('BE QUIET')) return 'BE QUIET!';
+            if (n.includes('LIAN LI')) return 'LIAN LI';
+            if (n.includes('RAZER')) return 'RAZER';
+            if (n.includes('LOGITECH')) return 'LOGITECH';
+            if (n.includes('STEELSERIES')) return 'STEELSERIES';
+            if (n.includes('KEYCHRON')) return 'KEYCHRON';
+            if (n.includes('SAPPHIRE')) return 'SAPPHIRE';
+            if (n.includes('ASROCK')) return 'ASROCK';
+            if (n.includes('THERMALTAKE')) return 'THERMALTAKE';
+            if (n.includes('SEASONIC')) return 'SEASONIC';
+            if (n.includes('FSP')) return 'FSP';
+            if (n.includes('BENQ')) return 'BENQ';
+            if (n.includes('LG')) return 'LG';
+            if (n.includes('AOC')) return 'AOC';
+            if (n.includes('ACER') || n.includes('PREDATOR')) return 'ACER';
+            if (n.includes('DELL')) return 'DELL';
+            if (n.includes('ADATA') || n.includes('XPG')) return 'ADATA';
+            if (n.includes('RAIJINTEK')) return 'RAIJINTEK';
+            return '';
+        }
+
+        function formatSpecs(product) {
+            if (!product.specs) return '';
+            const s = typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs;
+            if (product.category === 'CPU') return `${s.socket || ''} · ${s.cores || ''}C/${s.threads || ''}T · Base ${s.base_clock || ''}`;
+            if (product.category === 'Mainboard') return `${s.socket || ''} · ${s.chipset || ''} · ${s.form_factor || ''} · ${s.memory_type || ''}`;
+            if (product.category === 'RAM') return `${s.type || ''} · ${s.capacity || ''} · ${s.speed || ''}`;
+            if (product.category === 'GPU') return `${s.chipset || ''} · ${s.memory || ''} VRAM · ${s.length_mm || ''}mm`;
+            if (product.category === 'PSU') return `${s.wattage || ''}W · ${s.certification || ''}`;
+            if (product.category === 'Case') return `${s.form_factor || ''} · Max GPU: ${s.max_gpu_length || ''}mm`;
+            if (product.category === 'SSD') return `${s.capacity || ''} · ${s.interface || ''} · ${s.form_factor || ''}`;
+            if (product.category === 'Monitor') return `${s.size || ''} · ${s.resolution || ''} · ${s.refresh_rate || ''}`;
+            if (product.category === 'Cooler') return `${s.type || ''} · ${s.tdp_rating ? s.tdp_rating + 'W TDP' : s.size || ''} · ${s.noise_level || ''}`;
+            if (product.category === 'GamingGear') return `${s.type || ''} · ${s.switch || (s.dpi ? s.dpi + ' DPI' : '') || s.driver || s.connectivity || ''}`;
+            return '';
+        }
+
+        function getStockStatus(qty) {
+            if (qty <= 0) return { text: 'สินค้าหมด', cls: 'out' };
+            if (qty <= 5) return { text: `เหลือ ${qty} ชิ้น`, cls: 'low' };
+            return { text: 'มีสินค้า', cls: '' };
+        }
+
+        // Generate detailed SVG illustrations for each product category
+        function getProductSVG(category, brand, color) {
+            const c = color || '#60a5fa';
+            const c2 = c + '44'; // transparent version
+            const svgs = {
+                CPU: `<svg viewBox="0 0 200 200" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- CPU Package -->
+                    <rect x="45" y="45" width="110" height="110" rx="6" fill="#1a1a2a" stroke="${c}" stroke-width="1.5"/>
+                    <rect x="55" y="55" width="90" height="90" rx="4" fill="#0d0d1a" stroke="${c}66" stroke-width="1"/>
+                    <!-- Die -->
+                    <rect x="72" y="72" width="56" height="56" rx="3" fill="${c}22" stroke="${c}" stroke-width="0.8"/>
+                    <rect x="80" y="80" width="40" height="40" rx="2" fill="${c}33"/>
+                    <!-- Die details -->
+                    <rect x="84" y="84" width="14" height="14" rx="1" fill="${c}44"/>
+                    <rect x="102" y="84" width="14" height="14" rx="1" fill="${c}44"/>
+                    <rect x="84" y="102" width="14" height="14" rx="1" fill="${c}44"/>
+                    <rect x="102" y="102" width="14" height="14" rx="1" fill="${c}44"/>
+                    <!-- Pins - Top -->
+                    ${[60, 72, 84, 96, 108, 120, 132].map(x => `<rect x="${x}" y="32" width="3" height="13" rx="1" fill="${c}88"/>`).join('')}
+                    <!-- Pins - Bottom -->
+                    ${[60, 72, 84, 96, 108, 120, 132].map(x => `<rect x="${x}" y="155" width="3" height="13" rx="1" fill="${c}88"/>`).join('')}
+                    <!-- Pins - Left -->
+                    ${[60, 72, 84, 96, 108, 120, 132].map(y => `<rect x="32" y="${y}" width="13" height="3" rx="1" fill="${c}88"/>`).join('')}
+                    <!-- Pins - Right -->
+                    ${[60, 72, 84, 96, 108, 120, 132].map(y => `<rect x="155" y="${y}" width="13" height="3" rx="1" fill="${c}88"/>`).join('')}
+                    <!-- Glow -->
+                    <circle cx="100" cy="100" r="30" fill="${c}08"/>
+                </svg>`,
+
+                GPU: `<svg viewBox="0 0 220 160" width="160" height="116" xmlns="http://www.w3.org/2000/svg">
+                    <!-- PCB Board -->
+                    <rect x="10" y="15" width="200" height="105" rx="6" fill="#1a1a1a" stroke="${c}66" stroke-width="1"/>
+                    <!-- Backplate -->
+                    <rect x="10" y="15" width="200" height="105" rx="6" fill="#111" stroke="${c}44" stroke-width="0.8"/>
+                    <!-- Shroud -->
+                    <rect x="14" y="22" width="192" height="90" rx="5" fill="#0d0d12" stroke="${c}33" stroke-width="0.6"/>
+                    <!-- Fan 1 -->
+                    <circle cx="70" cy="67" r="35" fill="none" stroke="${c}44" stroke-width="1"/>
+                    <circle cx="70" cy="67" r="28" fill="none" stroke="${c}22" stroke-width="0.5"/>
+                    <circle cx="70" cy="67" r="5" fill="${c}44"/>
+                    ${[0, 60, 120, 180, 240, 300].map(a => { const r = a * Math.PI / 180; return `<path d="M${70 + 5 * Math.cos(r)},${67 + 5 * Math.sin(r)} Q${70 + 18 * Math.cos(r + 0.4)},${67 + 18 * Math.sin(r + 0.4)} ${70 + 28 * Math.cos(r + 0.3)},${67 + 28 * Math.sin(r + 0.3)}" fill="none" stroke="${c}55" stroke-width="2.5" stroke-linecap="round"/>` }).join('')}
+                    <!-- Fan 2 -->
+                    <circle cx="150" cy="67" r="35" fill="none" stroke="${c}44" stroke-width="1"/>
+                    <circle cx="150" cy="67" r="28" fill="none" stroke="${c}22" stroke-width="0.5"/>
+                    <circle cx="150" cy="67" r="5" fill="${c}44"/>
+                    ${[0, 60, 120, 180, 240, 300].map(a => { const r = a * Math.PI / 180; return `<path d="M${150 + 5 * Math.cos(r)},${67 + 5 * Math.sin(r)} Q${150 + 18 * Math.cos(r + 0.4)},${67 + 18 * Math.sin(r + 0.4)} ${150 + 28 * Math.cos(r + 0.3)},${67 + 28 * Math.sin(r + 0.3)}" fill="none" stroke="${c}55" stroke-width="2.5" stroke-linecap="round"/>` }).join('')}
+                    <!-- RGB Strip -->
+                    <rect x="14" y="108" width="192" height="4" rx="2" fill="${c}66"/>
+                    <!-- PCI connector -->
+                    <rect x="30" y="120" width="80" height="12" rx="2" fill="#222" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- Power connector -->
+                    <rect x="170" y="10" width="22" height="8" rx="1.5" fill="#222" stroke="${c}44" stroke-width="0.5"/>
+                </svg>`,
+
+                Mainboard: `<svg viewBox="0 0 180 200" width="120" height="133" xmlns="http://www.w3.org/2000/svg">
+                    <!-- PCB -->
+                    <rect x="10" y="10" width="160" height="180" rx="3" fill="#0a1410" stroke="${c}44" stroke-width="1"/>
+                    <!-- Mounting holes -->
+                    <circle cx="20" cy="20" r="4" fill="none" stroke="${c}33" stroke-width="1"/>
+                    <circle cx="160" cy="20" r="4" fill="none" stroke="${c}33" stroke-width="1"/>
+                    <circle cx="20" cy="180" r="4" fill="none" stroke="${c}33" stroke-width="1"/>
+                    <circle cx="160" cy="180" r="4" fill="none" stroke="${c}33" stroke-width="1"/>
+                    <!-- CPU Socket -->
+                    <rect x="40" y="35" width="55" height="55" rx="3" fill="#111" stroke="${c}66" stroke-width="1"/>
+                    <rect x="47" y="42" width="41" height="41" rx="2" fill="#0a0a0a" stroke="${c}44" stroke-width="0.5"/>
+                    <!-- VRM Heatsink -->
+                    <rect x="40" y="22" width="55" height="10" rx="2" fill="#1a1a1a" stroke="${c}44" stroke-width="0.5"/>
+                    <rect x="25" y="35" width="10" height="55" rx="2" fill="#1a1a1a" stroke="${c}44" stroke-width="0.5"/>
+                    <!-- RAM Slots -->
+                    ${[108, 118, 128, 138].map(x => `<rect x="${x}" y="30" width="6" height="65" rx="1" fill="#111" stroke="${c}44" stroke-width="0.5"/>`).join('')}
+                    <!-- Chipset heatsink -->
+                    <rect x="85" y="120" width="35" height="35" rx="4" fill="#1a1a1a" stroke="${c}55" stroke-width="0.8"/>
+                    <text x="102" y="142" text-anchor="middle" fill="${c}88" font-size="7" font-weight="bold">●</text>
+                    <!-- PCIe slots -->
+                    <rect x="25" y="105" width="50" height="7" rx="1" fill="#111" stroke="${c}33" stroke-width="0.5"/>
+                    <rect x="25" y="150" width="50" height="7" rx="1" fill="#111" stroke="${c}33" stroke-width="0.5"/>
+                    <rect x="25" y="165" width="30" height="5" rx="1" fill="#111" stroke="${c}22" stroke-width="0.5"/>
+                    <!-- M.2 slot -->
+                    <rect x="55" y="130" width="22" height="5" rx="1" fill="#0d0d0d" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- SATA -->
+                    <rect x="140" y="140" width="8" height="5" rx="1" fill="#111" stroke="${c}22" stroke-width="0.4"/>
+                    <rect x="140" y="150" width="8" height="5" rx="1" fill="#111" stroke="${c}22" stroke-width="0.4"/>
+                    <!-- IO Panel -->
+                    <rect x="130" y="12" width="35" height="14" rx="2" fill="#1a1a1a" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- Traces -->
+                    <line x1="95" y1="62" x2="108" y2="62" stroke="${c}22" stroke-width="0.3"/>
+                    <line x1="67" y1="90" x2="67" y2="105" stroke="${c}22" stroke-width="0.3"/>
+                </svg>`,
+
+                RAM: `<svg viewBox="0 0 200 120" width="160" height="96" xmlns="http://www.w3.org/2000/svg">
+                    <!-- PCB -->
+                    <rect x="10" y="30" width="180" height="65" rx="2" fill="#0a1a0a" stroke="${c}55" stroke-width="1"/>
+                    <!-- Heatspreader -->
+                    <path d="M12,30 L20,15 L180,15 L188,30 Z" fill="#1a1a1a" stroke="${c}55" stroke-width="0.8"/>
+                    <rect x="12" y="30" width="176" height="32" rx="1" fill="#1a1a2a" stroke="${c}44" stroke-width="0.5"/>
+                    <!-- Memory chips -->
+                    ${[25, 50, 75, 100, 125, 150, 168].map(x => `<rect x="${x}" y="68" width="12" height="18" rx="1" fill="#111" stroke="${c}33" stroke-width="0.5"/>`).join('')}
+                    <!-- Gold contacts -->
+                    ${Array.from({ length: 24 }, (_, i) => `<rect x="${20 + i * 7}" y="96" width="4" height="8" rx="0.5" fill="#c9a82c"/>`).join('')}
+                    <!-- Notch -->
+                    <rect x="105" y="96" width="8" height="8" fill="#0a0a0a"/>
+                    <!-- RGB zone -->
+                    <rect x="14" y="17" width="172" height="4" rx="2" fill="${c}44"/>
+                    <rect x="14" y="17" width="172" height="4" rx="2" fill="url(#rgbGrad)" opacity="0.6"/>
+                    <defs><linearGradient id="rgbGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#ff6b6b"/>
+                        <stop offset="25%" stop-color="#ffd43b"/>
+                        <stop offset="50%" stop-color="#51cf66"/>
+                        <stop offset="75%" stop-color="#339af0"/>
+                        <stop offset="100%" stop-color="#cc5de8"/>
+                    </linearGradient></defs>
+                    <!-- Label area -->
+                    <rect x="30" y="36" width="60" height="18" rx="2" fill="${c}11" stroke="${c}22" stroke-width="0.3"/>
+                </svg>`,
+
+                SSD: `<svg viewBox="0 0 200 130" width="150" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- M.2 SSD body -->
+                    <rect x="20" y="35" width="160" height="60" rx="4" fill="#111" stroke="${c}44" stroke-width="1"/>
+                    <!-- Label sticker -->
+                    <rect x="25" y="40" width="100" height="50" rx="3" fill="${c}15" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- NAND chips visible -->
+                    <rect x="130" y="45" width="18" height="18" rx="2" fill="#0a0a0a" stroke="${c}33" stroke-width="0.5"/>
+                    <rect x="130" y="68" width="18" height="18" rx="2" fill="#0a0a0a" stroke="${c}33" stroke-width="0.5"/>
+                    <rect x="152" y="45" width="18" height="18" rx="2" fill="#0a0a0a" stroke="${c}33" stroke-width="0.5"/>
+                    <rect x="152" y="68" width="18" height="18" rx="2" fill="#0a0a0a" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- Controller -->
+                    <rect x="35" y="52" width="22" height="22" rx="2" fill="#0d0d0d" stroke="${c}55" stroke-width="0.6"/>
+                    <rect x="40" y="57" width="12" height="12" rx="1" fill="${c}22"/>
+                    <!-- M.2 connector -->
+                    <rect x="12" y="55" width="8" height="20" rx="1" fill="#c9a82c88"/>
+                    <!-- Notch -->
+                    <rect x="12" y="62" width="8" height="6" fill="#111"/>
+                    <!-- Label text area -->
+                    <rect x="65" y="50" width="50" height="8" rx="1" fill="${c}22"/>
+                    <rect x="65" y="62" width="35" height="5" rx="1" fill="${c}15"/>
+                    <rect x="65" y="72" width="45" height="5" rx="1" fill="${c}11"/>
+                    <!-- Speed indicator -->
+                    <rect x="28" y="80" width="90" height="3" rx="1.5" fill="${c}22"/>
+                </svg>`,
+
+                PSU: `<svg viewBox="0 0 200 180" width="130" height="117" xmlns="http://www.w3.org/2000/svg">
+                    <!-- PSU body -->
+                    <rect x="20" y="20" width="160" height="140" rx="5" fill="#1a1a1a" stroke="${c}44" stroke-width="1"/>
+                    <!-- Fan grille -->
+                    <circle cx="100" cy="90" r="50" fill="none" stroke="${c}33" stroke-width="0.8"/>
+                    <circle cx="100" cy="90" r="42" fill="none" stroke="${c}22" stroke-width="0.5"/>
+                    <circle cx="100" cy="90" r="8" fill="${c}33"/>
+                    <!-- Fan blades -->
+                    ${[0, 45, 90, 135, 180, 225, 270, 315].map(a => { const r = a * Math.PI / 180; return `<path d="M${100 + 8 * Math.cos(r)},${90 + 8 * Math.sin(r)} Q${100 + 25 * Math.cos(r + 0.3)},${90 + 25 * Math.sin(r + 0.3)} ${100 + 42 * Math.cos(r + 0.2)},${90 + 42 * Math.sin(r + 0.2)}" fill="none" stroke="${c}44" stroke-width="3" stroke-linecap="round"/>` }).join('')}
+                    <!-- Grille pattern -->
+                    ${[-40, -30, -20, -10, 0, 10, 20, 30, 40].map(x => `<line x1="${100 + x}" y1="42" x2="${100 + x}" y2="138" stroke="${c}15" stroke-width="0.5"/>`).join('')}
+                    <!-- Label -->
+                    <rect x="30" y="145" width="60" height="8" rx="2" fill="${c}22"/>
+                    <!-- Power switch -->
+                    <rect x="150" y="148" width="16" height="6" rx="2" fill="#222" stroke="${c}33" stroke-width="0.5"/>
+                    <circle cx="160" cy="151" r="2" fill="${c}66"/>
+                    <!-- Certification badge -->
+                    <rect x="100" y="145" width="30" height="8" rx="2" fill="${c}15" stroke="${c}22" stroke-width="0.3"/>
+                    <!-- Modular connectors side -->
+                    <rect x="175" y="35" width="5" height="12" rx="1" fill="#222" stroke="${c}22" stroke-width="0.3"/>
+                    <rect x="175" y="55" width="5" height="12" rx="1" fill="#222" stroke="${c}22" stroke-width="0.3"/>
+                    <rect x="175" y="75" width="5" height="12" rx="1" fill="#222" stroke="${c}22" stroke-width="0.3"/>
+                    <rect x="175" y="95" width="5" height="12" rx="1" fill="#222" stroke="${c}22" stroke-width="0.3"/>
+                    <rect x="175" y="115" width="5" height="12" rx="1" fill="#c9a82c66" stroke="${c}22" stroke-width="0.3"/>
+                </svg>`,
+
+                Case: `<svg viewBox="0 0 160 200" width="110" height="138" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Case body -->
+                    <rect x="15" y="10" width="130" height="180" rx="6" fill="#141414" stroke="${c}44" stroke-width="1"/>
+                    <!-- Glass panel -->
+                    <rect x="20" y="15" width="95" height="170" rx="4" fill="${c}08" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- Visible components inside -->
+                    <!-- Mainboard area -->
+                    <rect x="28" y="25" width="75" height="100" rx="2" fill="#0a0f0a" stroke="${c}15" stroke-width="0.3"/>
+                    <!-- AIO radiator top -->
+                    <rect x="25" y="18" width="85" height="10" rx="2" fill="#1a1a1a" stroke="${c}22" stroke-width="0.3"/>
+                    <!-- CPU block -->
+                    <rect x="42" y="50" width="25" height="25" rx="3" fill="#111" stroke="${c}44" stroke-width="0.5"/>
+                    <circle cx="54" cy="62" r="8" fill="${c}22" stroke="${c}55" stroke-width="0.5"/>
+                    <!-- GPU -->
+                    <rect x="30" y="95" width="70" height="14" rx="2" fill="#151515" stroke="${c}33" stroke-width="0.5"/>
+                    <circle cx="48" cy="102" r="4" fill="none" stroke="${c}33" stroke-width="0.4"/>
+                    <circle cx="82" cy="102" r="4" fill="none" stroke="${c}33" stroke-width="0.4"/>
+                    <!-- RGB strips -->
+                    <rect x="22" y="130" width="3" height="50" rx="1.5" fill="${c}55"/>
+                    <!-- PSU shroud -->
+                    <rect x="22" y="140" width="88" height="40" rx="3" fill="#0d0d0d" stroke="${c}22" stroke-width="0.3"/>
+                    <!-- Front panel -->
+                    <rect x="120" y="15" width="20" height="170" rx="3" fill="#111" stroke="${c}22" stroke-width="0.3"/>
+                    <!-- Front fans -->
+                    <circle cx="130" cy="55" r="12" fill="none" stroke="${c}22" stroke-width="0.4"/>
+                    <circle cx="130" cy="85" r="12" fill="none" stroke="${c}22" stroke-width="0.4"/>
+                    <circle cx="130" cy="115" r="12" fill="none" stroke="${c}22" stroke-width="0.4"/>
+                    <!-- Power button -->
+                    <circle cx="130" cy="25" r="3" fill="${c}44" stroke="${c}" stroke-width="0.5"/>
+                    <!-- USB ports -->
+                    <rect x="126" y="32" width="8" height="3" rx="1" fill="#222"/>
+                    <rect x="126" y="37" width="8" height="3" rx="1" fill="#222"/>
+                </svg>`,
+
+                Cooler: `<svg viewBox="0 0 200 180" width="140" height="126" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Radiator -->
+                    <rect x="30" y="15" width="140" height="30" rx="3" fill="#1a1a1a" stroke="${c}44" stroke-width="0.8"/>
+                    <!-- Radiator fins -->
+                    ${Array.from({ length: 25 }, (_, i) => `<line x1="${38 + i * 5.2}" y1="18" x2="${38 + i * 5.2}" y2="42" stroke="${c}22" stroke-width="0.4"/>`).join('')}
+                    <!-- Tubes -->
+                    <path d="M50,45 C50,80 60,90 70,100" fill="none" stroke="${c}55" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M150,45 C150,80 140,90 130,100" fill="none" stroke="${c}55" stroke-width="4" stroke-linecap="round"/>
+                    <!-- Pump/CPU block -->
+                    <rect x="65" y="100" width="70" height="45" rx="8" fill="#111" stroke="${c}55" stroke-width="1"/>
+                    <circle cx="100" cy="122" r="18" fill="#0a0a0a" stroke="${c}44" stroke-width="0.8"/>
+                    <circle cx="100" cy="122" r="12" fill="${c}22"/>
+                    <circle cx="100" cy="122" r="6" fill="${c}44"/>
+                    <!-- Fan on radiator -->
+                    <circle cx="100" cy="60" r="22" fill="none" stroke="${c}22" stroke-width="0.6"/>
+                    <circle cx="100" cy="60" r="4" fill="${c}33"/>
+                    ${[0, 72, 144, 216, 288].map(a => { const r = a * Math.PI / 180; return `<path d="M${100 + 4 * Math.cos(r)},${60 + 4 * Math.sin(r)} Q${100 + 12 * Math.cos(r + 0.4)},${60 + 12 * Math.sin(r + 0.4)} ${100 + 20 * Math.cos(r + 0.25)},${60 + 20 * Math.sin(r + 0.25)}" fill="none" stroke="${c}44" stroke-width="2" stroke-linecap="round"/>` }).join('')}
+                    <!-- Glow -->
+                    <circle cx="100" cy="122" r="25" fill="${c}08"/>
+                </svg>`,
+
+                Monitor: `<svg viewBox="0 0 220 170" width="160" height="124" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Monitor body -->
+                    <rect x="15" y="10" width="190" height="115" rx="6" fill="#111" stroke="${c}44" stroke-width="1"/>
+                    <!-- Screen -->
+                    <rect x="20" y="15" width="180" height="100" rx="3" fill="#0a0a15"/>
+                    <!-- Screen content hint -->
+                    <rect x="25" y="20" width="170" height="90" rx="2" fill="linear-gradient(#0d0d1a, #0a0a15)"/>
+                    <rect x="25" y="20" width="170" height="90" rx="2" fill="${c}06"/>
+                    <!-- Screen glow -->
+                    <rect x="50" y="40" width="120" height="50" rx="4" fill="${c}08"/>
+                    <!-- Ambient elements on screen -->
+                    <rect x="35" y="30" width="40" height="3" rx="1.5" fill="${c}22"/>
+                    <rect x="35" y="38" width="60" height="2" rx="1" fill="${c}11"/>
+                    <rect x="35" y="44" width="30" height="2" rx="1" fill="${c}11"/>
+                    <circle cx="170" cy="35" r="6" fill="${c}15" stroke="${c}33" stroke-width="0.5"/>
+                    <!-- Bezel bottom -->
+                    <rect x="15" y="115" width="190" height="10" rx="0 0 6 6" fill="#151515"/>
+                    <!-- Brand dot -->
+                    <circle cx="110" cy="120" r="2" fill="${c}44"/>
+                    <!-- Stand neck -->
+                    <rect x="95" y="125" width="30" height="18" rx="2" fill="#1a1a1a" stroke="${c}22" stroke-width="0.5"/>
+                    <!-- Stand base -->
+                    <ellipse cx="110" cy="150" rx="45" ry="8" fill="#151515" stroke="${c}33" stroke-width="0.8"/>
+                    <!-- RGB on back -->
+                    <rect x="20" y="125" width="5" height="3" rx="1" fill="${c}66"/>
+                </svg>`,
+
+                GamingGear: `<svg viewBox="0 0 200 160" width="150" height="120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Keyboard base -->
+                    <rect x="10" y="70" width="180" height="55" rx="6" fill="#151515" stroke="${c}44" stroke-width="1"/>
+                    <!-- Key rows -->
+                    ${Array.from({ length: 14 }, (_, i) => `<rect x="${18 + i * 12.5}" y="78" width="10" height="9" rx="1.5" fill="#1a1a1a" stroke="${c}33" stroke-width="0.4"/>`).join('')}
+                    ${Array.from({ length: 13 }, (_, i) => `<rect x="${22 + i * 12.5}" y="90" width="10" height="9" rx="1.5" fill="#1a1a1a" stroke="${c}33" stroke-width="0.4"/>`).join('')}
+                    ${Array.from({ length: 12 }, (_, i) => `<rect x="${28 + i * 12.5}" y="102" width="10" height="9" rx="1.5" fill="#1a1a1a" stroke="${c}33" stroke-width="0.4"/>`).join('')}
+                    <!-- Spacebar -->
+                    <rect x="55" y="114" width="80" height="7" rx="2" fill="#1a1a1a" stroke="${c}33" stroke-width="0.4"/>
+                    <!-- RGB underglow -->
+                    <rect x="12" y="122" width="176" height="3" rx="1.5" fill="${c}55"/>
+                    <!-- Mouse -->
+                    <rect x="140" y="18" width="40" height="55" rx="18" fill="#151515" stroke="${c}44" stroke-width="1"/>
+                    <!-- Mouse buttons -->
+                    <rect x="142" y="20" width="17" height="28" rx="16 2 2 2" fill="#1a1a1a" stroke="${c}33" stroke-width="0.3"/>
+                    <rect x="161" y="20" width="17" height="28" rx="2 16 2 2" fill="#1a1a1a" stroke="${c}33" stroke-width="0.3"/>
+                    <!-- Scroll wheel -->
+                    <rect x="156" y="28" width="8" height="12" rx="4" fill="#111" stroke="${c}55" stroke-width="0.5"/>
+                    <!-- Mouse RGB -->
+                    <rect x="155" y="55" width="10" height="3" rx="1.5" fill="${c}66"/>
+                    <!-- DPI indicator -->
+                    <circle cx="160" cy="48" r="2" fill="${c}55"/>
+                    <!-- Cable/wireless indicator -->
+                    <path d="M160,18 C160,8 160,5 155,2" fill="none" stroke="${c}33" stroke-width="0.8"/>
+                </svg>`
+            };
+            return svgs[category] || svgs['CPU'];
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            const loading = document.getElementById('loading-state');
+            const empty = document.getElementById('empty-state');
+            const cart = getCart();
+
+            let products = allProducts.filter(p => p.category === currentCategory);
+
+            products.sort((a, b) => {
+                if (currentSort === 'name-asc') return a.name.localeCompare(b.name);
+                if (currentSort === 'name-desc') return b.name.localeCompare(a.name);
+                if (currentSort === 'price-asc') return parseFloat(a.price) - parseFloat(b.price);
+                if (currentSort === 'price-desc') return parseFloat(b.price) - parseFloat(a.price);
+                return 0;
+            });
+
+            document.getElementById('product-count').textContent = `${products.length} รายการ`;
+            loading.classList.add('hidden');
+
+            if (products.length === 0) {
+                grid.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            grid.innerHTML = products.map(p => {
+                const specs = formatSpecs(p);
+                const stock = getStockStatus(parseInt(p.quantity));
+                const warranty = p.warranty_months ? (p.warranty_months >= 999 ? 'Lifetime' : p.warranty_months + ' เดือน') : '';
+                const brand = getBrandFromName(p.name);
+                const iconColor = catColorMap[p.category] || '#ffd43b';
+                const inCart = cart.some(item => item.id == p.id);
+                const productSVG = getProductSVG(p.category, brand, iconColor);
+
+                return `
+                    <div class="product-card">
+                        <div class="product-img cat-${p.category}">
+                            <div class="product-icon-wrap">
+                                ${brand ? `<span class="product-brand">${brand}</span>` : ''}
+                                ${productSVG}
+                            </div>
+                            ${warranty ? `<div class="warranty-badge"><i class="fa-solid fa-shield-halved"></i> ${warranty}</div>` : ''}
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">${p.name}</div>
+                            <div class="product-specs">${specs}</div>
+                            <div class="product-bottom">
+                                <div>
+                                    <div class="product-price">฿${parseFloat(p.price).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                                    <div class="product-stock ${stock.cls}"><i class="fa-solid fa-circle text-[6px] mr-1"></i>${stock.text}</div>
+                                </div>
+                                <button id="cart-btn-${p.id}" class="add-cart-btn ${inCart ? 'added' : ''}" onclick="addToCart(${p.id})" title="เพิ่มลงตะกร้า">
+                                    <i class="fa-solid ${inCart ? 'fa-check' : 'fa-cart-plus'}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        }
+
+        document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        });
+    </script>
+
+    <script src="js/chat.js"></script>
+</body>
+
+</html>

@@ -4,81 +4,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - PC Build Shop Inventory</title>
+    <title>iHave STOCK - Premium PC Authentication</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             font-family: 'Kanit', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+
+        .ihave-bg-surface {
+            background-color: #1a1a1a;
+        }
+
+        .ihave-gold {
+            color: #ffd43b;
+        }
+
+        .ihave-gold-bg {
+            background-color: #ffd43b;
+        }
+
+        .gradient-text {
+            background: linear-gradient(45deg, #ffd43b, #ffec99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-dark {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .input-dark:focus {
+            border-color: #ffd43b;
+            box-shadow: 0 0 15px rgba(255, 212, 59, 0.1);
+            outline: none;
         }
     </style>
 </head>
 
-<body class="bg-slate-50 flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen p-6">
 
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-600 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-desktop"></i> PC Shop
+    <div
+        class="ihave-bg-surface p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full max-w-md border border-white/5 relative overflow-hidden">
+        <!-- Background Glow -->
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-[#ffd43b] opacity-10 blur-[80px]"></div>
+
+        <div class="text-center mb-10 relative z-10">
+            <h1 class="text-4xl font-bold tracking-tighter mb-2">
+                <span class="gradient-text">iHave</span> STOCK
             </h1>
-            <p class="text-slate-500 mt-2">Inventory Management System</p>
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Premium PC Configuration Shop</p>
         </div>
 
         <!-- Login Form -->
-        <form id="login-form" class="space-y-4">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">Login</h2>
-            <div id="login-error" class="hidden bg-red-100 text-red-700 p-3 rounded-lg text-sm text-center"></div>
+        <form id="login-form" class="space-y-6 relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white">เข้าสู่ระบบ</h2>
+                <i class="fa-solid fa-lock text-[#ffd43b]"></i>
+            </div>
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
-                <input type="text" id="login-username" required
-                    class="w-full rounded-lg border-slate-300 border px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50">
+            <div id="login-error"
+                class="hidden bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl text-xs text-center font-bold">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                <input type="password" id="login-password" required
-                    class="w-full rounded-lg border-slate-300 border px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50">
+
+            <div class="space-y-2">
+                <label
+                    class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">ชื่อผู้ใช้งาน</label>
+                <div class="relative">
+                    <input type="text" id="login-username" required placeholder="Username"
+                        class="w-full rounded-xl input-dark px-10 py-3.5 text-sm">
+                    <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                </div>
             </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">รหัสผ่าน</label>
+                <div class="relative">
+                    <input type="password" id="login-password" required placeholder="••••••••"
+                        class="w-full rounded-xl input-dark px-10 py-3.5 text-sm">
+                    <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                </div>
+            </div>
+
             <button type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-200 mt-2">
-                Sign In
+                class="w-full ihave-gold-bg text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition shadow-[0_10px_20px_rgba(255,212,59,0.2)] active:scale-95 mt-4">
+                SIGN IN
             </button>
-            <p class="text-center text-sm text-slate-500 mt-4">
-                Don't have an account? <a href="#" onclick="toggleAuth('register')"
-                    class="text-blue-600 hover:underline font-semibold">Register</a>
+
+            <p class="text-center text-xs text-slate-500 mt-6 font-bold uppercase tracking-tight">
+                ยังไม่มีบัญชี? <a href="#" onclick="toggleAuth('register')"
+                    class="ihave-gold hover:underline">สร้างบัญชีใหม่</a>
             </p>
         </form>
 
         <!-- Register Form -->
-        <form id="register-form" class="space-y-4 hidden">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">Create Account</h2>
-            <div id="register-error" class="hidden bg-red-100 text-red-700 p-3 rounded-lg text-sm text-center"></div>
-            <div id="register-success" class="hidden bg-green-100 text-green-700 p-3 rounded-lg text-sm text-center">
+        <form id="register-form" class="space-y-6 hidden relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white">สร้างบัญชีใหม่</h2>
+                <i class="fa-solid fa-user-plus text-[#ffd43b]"></i>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
-                <input type="text" id="register-username" required
-                    class="w-full rounded-lg border-slate-300 border px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50">
+            <div id="register-error"
+                class="hidden bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl text-xs text-center font-bold">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                <input type="password" id="register-password" required
-                    class="w-full rounded-lg border-slate-300 border px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50">
+            <div id="register-success"
+                class="hidden bg-green-500/10 border border-green-500/20 text-green-500 p-3 rounded-xl text-xs text-center font-bold">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
-                <input type="password" id="register-confirm-password" required
-                    class="w-full rounded-lg border-slate-300 border px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50">
+
+            <div class="space-y-2">
+                <label
+                    class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">ชื่อผู้ใช้งาน</label>
+                <input type="text" id="register-username" required placeholder="Choose a username"
+                    class="w-full rounded-xl input-dark px-4 py-3.5 text-sm">
             </div>
+            <div class="space-y-2">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">รหัสผ่าน</label>
+                <input type="password" id="register-password" required placeholder="••••••••"
+                    class="w-full rounded-xl input-dark px-4 py-3.5 text-sm">
+            </div>
+            <div class="space-y-2">
+                <label
+                    class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">ยืนยันรหัสผ่านอีกครั้ง</label>
+                <input type="password" id="register-confirm-password" required placeholder="••••••••"
+                    class="w-full rounded-xl input-dark px-4 py-3.5 text-sm">
+            </div>
+
             <button type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-green-200 mt-2">
-                Register
+                class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition shadow-lg active:scale-95 mt-4">
+                REGISTER
             </button>
-            <p class="text-center text-sm text-slate-500 mt-4">
-                Already have an account? <a href="#" onclick="toggleAuth('login')"
-                    class="text-blue-600 hover:underline font-semibold">Sign In</a>
+
+            <p class="text-center text-xs text-slate-500 mt-6 font-bold uppercase tracking-tight">
+                มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuth('login')"
+                    class="ihave-gold hover:underline">เข้าสู่ระบบ</a>
             </p>
         </form>
     </div>

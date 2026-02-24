@@ -113,6 +113,120 @@
             width: 300px;
             border-color: #ffd43b;
         }
+
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 212, 59, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            z-index: 200;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: none;
+            animation: dropdownFadeIn 0.2s ease;
+        }
+
+        .search-dropdown.active {
+            display: block;
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: rgba(255, 212, 59, 0.08);
+        }
+
+        .search-result-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 212, 59, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd43b;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .search-result-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-result-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-name mark {
+            background: rgba(255, 212, 59, 0.3);
+            color: #ffd43b;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        .search-result-meta {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .search-result-price {
+            font-weight: 700;
+            color: #ffd43b;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .search-no-result {
+            padding: 20px 16px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .search-hint {
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 10px;
+            color: #475569;
+            background: rgba(255, 255, 255, 0.02);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -123,11 +237,13 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-8">
                 <a href="index.html" class="text-2xl font-bold tracking-tighter flex items-center gap-2">
-                    <span class="gradient-text">iHave</span>STOCK
+                    <span class="gradient-text">iHave</span> STOCK
                 </a>
 
                 <div class="hidden md:flex items-center gap-6">
                     <a href="index.html" class="ihave-gold font-bold text-sm uppercase tracking-widest">หน้าแรก</a>
+                    <a href="products.html"
+                        class="text-slate-400 hover:text-[#ffd43b] transition font-bold text-sm uppercase tracking-widest">สินค้าทั้งหมด</a>
                     <a href="builder.html"
                         class="text-slate-400 hover:text-[#ffd43b] transition font-bold text-sm uppercase tracking-widest">จัดสเปคคอม</a>
                     <a href="#"
@@ -139,10 +255,11 @@
 
             <div class="flex items-center gap-6">
                 <div class="relative search-container">
-                    <input type="text" placeholder="ค้นหาสินค้า..."
+                    <input id="search-input" type="text" placeholder="ค้นหาสินค้า..." autocomplete="off"
                         class="bg-white/5 border border-white/10 rounded-full px-10 py-2 text-sm focus:outline-none transition-all w-48 text-white">
                     <i
                         class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <div id="search-dropdown" class="search-dropdown"></div>
                 </div>
                 <div class="flex items-center gap-4">
                     <button class="relative text-slate-300 hover:text-[#ffd43b] transition">
@@ -344,6 +461,126 @@
 
         // Auto slide
         setInterval(nextSlide, 5000);
+    </script>
+
+    <!-- Search Autocomplete -->
+    <script>
+        (function () {
+            const searchInput = document.getElementById('search-input');
+            const searchDropdown = document.getElementById('search-dropdown');
+            let allProducts = [];
+
+            // Category icon map
+            const categoryIcons = {
+                'CPU': 'fa-microchip',
+                'Cooler': 'fa-fan',
+                'Mainboard': 'fa-chess-board',
+                'RAM': 'fa-memory',
+                'GPU': 'fa-gamepad',
+                'SSD': 'fa-hard-drive',
+                'PSU': 'fa-plug',
+                'Case': 'fa-box',
+                'Monitor': 'fa-desktop',
+                'GamingGear': 'fa-keyboard'
+            };
+
+            // Fetch products once on page load
+            async function loadProducts() {
+                try {
+                    const res = await fetch('/api/products.php');
+                    allProducts = await res.json();
+                } catch (e) {
+                    console.error('Search: Could not fetch products', e);
+                    allProducts = [];
+                }
+            }
+
+            loadProducts();
+
+            // Highlight matching text
+            function highlightMatch(text, query) {
+                const idx = text.toLowerCase().indexOf(query.toLowerCase());
+                if (idx === -1) return text;
+                const before = text.substring(0, idx);
+                const match = text.substring(idx, idx + query.length);
+                const after = text.substring(idx + query.length);
+                return `${before}<mark>${match}</mark>${after}`;
+            }
+
+            // Search and render results
+            function performSearch(query) {
+                if (query.length < 2) {
+                    searchDropdown.classList.remove('active');
+                    return;
+                }
+
+                const q = query.toLowerCase();
+                const matches = allProducts.filter(p =>
+                    p.name.toLowerCase().includes(q) ||
+                    (p.model && p.model.toLowerCase().includes(q)) ||
+                    (p.category && p.category.toLowerCase().includes(q))
+                ).slice(0, 2); // Only top 2
+
+                if (matches.length === 0) {
+                    searchDropdown.innerHTML = `
+                        <div class="search-no-result">
+                            <i class="fa-solid fa-magnifying-glass text-2xl mb-2 opacity-30"></i>
+                            <p>ไม่พบสินค้าที่ตรงกับ "${query}"</p>
+                        </div>
+                    `;
+                    searchDropdown.classList.add('active');
+                    return;
+                }
+
+                let html = '';
+                matches.forEach(product => {
+                    const icon = categoryIcons[product.category] || 'fa-box';
+                    const price = parseFloat(product.price).toLocaleString();
+                    const highlightedName = highlightMatch(product.name, query);
+
+                    html += `
+                        <div class="search-result-item" onclick="window.location.href='builder.html'">
+                            <div class="search-result-icon">
+                                <i class="fa-solid ${icon}"></i>
+                            </div>
+                            <div class="search-result-info">
+                                <div class="search-result-name">${highlightedName}</div>
+                                <div class="search-result-meta">${product.category} ${product.model ? '· ' + product.model : ''}</div>
+                            </div>
+                            <div class="search-result-price">฿${price}</div>
+                        </div>
+                    `;
+                });
+
+                html += `<div class="search-hint">แสดง ${matches.length} จาก ${allProducts.filter(p => p.name.toLowerCase().includes(q) || (p.model && p.model.toLowerCase().includes(q)) || (p.category && p.category.toLowerCase().includes(q))).length} รายการที่ตรงกัน</div>`;
+
+                searchDropdown.innerHTML = html;
+                searchDropdown.classList.add('active');
+            }
+
+            // Event listeners
+            let debounceTimer;
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    performSearch(this.value.trim());
+                }, 150);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                    searchDropdown.classList.remove('active');
+                }
+            });
+
+            // Re-open on focus if there's text
+            searchInput.addEventListener('focus', function () {
+                if (this.value.trim().length >= 2) {
+                    performSearch(this.value.trim());
+                }
+            });
+        })();
     </script>
 
     <script src="js/chat.js"></script>
