@@ -4,12 +4,15 @@
 
 const categories = [
     { id: 'cpu', name: 'CPU', icon: 'fa-microchip' },
+    { id: 'cooler', name: 'CPU Cooler', icon: 'fa-fan' },
     { id: 'mainboard', name: 'Mainboard', icon: 'fa-chess-board' },
     { id: 'ram', name: 'Memory (RAM)', icon: 'fa-memory' },
     { id: 'gpu', name: 'Graphics Card', icon: 'fa-gamepad' },
     { id: 'ssd', name: 'Storage (SSD)', icon: 'fa-hard-drive' },
     { id: 'psu', name: 'Power Supply', icon: 'fa-plug' },
-    { id: 'case', name: 'Case', icon: 'fa-box' }
+    { id: 'case', name: 'Case', icon: 'fa-box' },
+    { id: 'monitor', name: 'Monitor', icon: 'fa-desktop' },
+    { id: 'gaminggear', name: 'Gaming Gear', icon: 'fa-keyboard' }
 ];
 
 const gamesData = [
@@ -20,6 +23,11 @@ const gamesData = [
 
 const compatibilityRules = {
     formFactorOrder: ['ITX', 'M-ATX', 'ATX', 'E-ATX'],
+    chipsetMap: {
+        'LGA1700': ['Z790', 'B760', 'H770', 'Z690', 'B660', 'H610'],
+        'AM5': ['X670E', 'X670', 'B650E', 'B650', 'A620'],
+        'AM4': ['X570', 'B550', 'A520', 'X470', 'B450']
+    },
     isCaseCompatible: (caseForm, mbForm) => {
         const cIdx = compatibilityRules.formFactorOrder.indexOf(caseForm);
         const mIdx = compatibilityRules.formFactorOrder.indexOf(mbForm);
@@ -153,7 +161,8 @@ function checkItemCompatibility(catId, selected) {
 
     if (catId === 'psu') {
         const totalTDP = calculateWattage();
-        if (selected.specs?.wattage < totalTDP + 100) return "Wattage may be insufficient!";
+        const recommendedMin = totalTDP + 150; // Add 150W cushion for transients
+        if (selected.specs?.wattage < recommendedMin) return `Wattage might be insufficient! (Recommended: ${recommendedMin}W+)`;
     }
 
     return null;
@@ -175,11 +184,21 @@ function closeModal() {
 }
 
 function getCompatibleProducts(categoryName, categoryId) {
-    let dbCategory = categoryName;
-    if (categoryId === 'ram') dbCategory = 'RAM';
-    if (categoryId === 'ssd') dbCategory = 'SSD';
+    const categoryMap = {
+        'cpu': 'CPU',
+        'cooler': 'Cooler',
+        'mainboard': 'Mainboard',
+        'ram': 'RAM',
+        'gpu': 'GPU',
+        'ssd': 'SSD',
+        'psu': 'PSU',
+        'case': 'Case',
+        'monitor': 'Monitor',
+        'gaminggear': 'GamingGear'
+    };
 
-    let available = state.products.filter(p => p.category === dbCategory || p.category.toLowerCase() === categoryName.toLowerCase());
+    let dbCategory = categoryMap[categoryId] || categoryName;
+    let available = state.products.filter(p => p.category === dbCategory);
 
     const cpu = state.components['cpu'];
     const mb = state.components['mainboard'];
@@ -337,12 +356,16 @@ function proceedToCheckout() {
 }
 
 function calculateWattage() {
-    let watts = 50; // Motherboard + Fans base
+    let watts = 80; // Motherboard + Fans + SSD base (upped from 50)
     const cpu = state.components['cpu'];
     const gpu = state.components['gpu'];
 
     if (cpu && cpu.specs?.tdp) watts += parseInt(cpu.specs.tdp);
     if (gpu && gpu.specs?.tdp) watts += parseInt(gpu.specs.tdp);
+
+    // If it's a high-end CPU/GPU, add a safety buffer
+    if (cpu && (cpu.name.includes('i9') || cpu.name.includes('Ryzen 9'))) watts += 50;
+    if (gpu && (gpu.name.includes('4090') || gpu.name.includes('7900'))) watts += 100;
 
     return watts;
 }
@@ -357,6 +380,9 @@ function formatSpecs(product) {
     if (product.category === 'PSU') return `${s.wattage}W | ${s.certification}`;
     if (product.category === 'Case') return `${s.form_factor} | Max GPU: ${s.max_gpu_length}mm`;
     if (product.category === 'SSD') return `${s.capacity} | ${s.interface}`;
+    if (product.category === 'Monitor') return `${s.size} | ${s.resolution} | ${s.refresh_rate}`;
+    if (product.category === 'Cooler') return `${s.type} | ${s.tdp_rating ? s.tdp_rating + 'W TDP' : s.size}`;
+    if (product.category === 'GamingGear') return `${s.type} | ${s.switch || s.dpi + ' DPI'}`;
     return '';
 }
 
