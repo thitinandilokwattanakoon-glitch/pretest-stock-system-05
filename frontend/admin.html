@@ -11,6 +11,26 @@
     <style>
         body {
             font-family: 'Kanit', sans-serif;
+            background-color: #0c0c0c;
+            color: #ffffff;
+        }
+
+        .ihave-gold {
+            color: #ffd43b;
+        }
+
+        .ihave-bg-surface {
+            background-color: #1a1a1a;
+        }
+
+        .ihave-bg-dark {
+            background-color: #0c0c0c;
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 212, 59, 0.1);
+            color: #ffd43b;
+            border-left: 3px solid #ffd43b;
         }
     </style>
 </head>
@@ -19,15 +39,15 @@
 
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-white flex-col hidden md:flex">
-            <div class="p-6 border-b border-slate-800">
+        <aside class="w-64 ihave-bg-surface text-white flex-col hidden md:flex border-r border-white/5 shadow-2xl">
+            <div class="p-6 border-b border-white/5">
                 <h1 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-blue-500"></i> Admin Panel
+                    <i class="fa-solid fa-shield-halved ihave-gold"></i> iHave<span class="ihave-gold">ADMIN</span>
                 </h1>
             </div>
             <nav class="flex-1 p-4 space-y-2">
                 <button onclick="showSection('orders')" id="nav-orders"
-                    class="w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold flex items-center gap-3 transition">
+                    class="nav-item w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 font-medium flex items-center gap-3 transition">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Orders
                 </button>
                 <button onclick="showSection('warranty')" id="nav-warranty"
@@ -50,14 +70,15 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden">
-            <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-6">
-                <h2 class="font-bold text-slate-700" id="page-title">Order Management</h2>
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-ihave-bg-dark">
+            <header
+                class="ihave-bg-surface h-16 border-b border-white/5 flex items-center justify-between px-6 shadow-sm">
+                <h2 class="font-bold text-white uppercase tracking-widest text-sm" id="page-title">Order Management</h2>
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                        class="w-8 h-8 rounded-full bg-[#ffd43b]/10 text-[#ffd43b] flex items-center justify-center font-bold border border-[#ffd43b]/20">
                         A</div>
-                    <span class="text-sm font-medium">Administrator</span>
+                    <span class="text-xs font-bold uppercase tracking-tighter text-slate-400">Administrator</span>
                 </div>
             </header>
 

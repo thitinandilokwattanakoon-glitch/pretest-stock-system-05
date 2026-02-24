@@ -37,13 +37,9 @@ function showPage(pageId) {
     document.getElementById(`page-${pageId}`).classList.remove('hidden');
 
     // Update Sidebar Active State
-    document.getElementById('nav-dashboard').classList.remove('bg-blue-50', 'text-blue-600');
-    document.getElementById('nav-inventory').classList.remove('bg-blue-50', 'text-blue-600');
-    document.getElementById('nav-dashboard').classList.add('text-slate-600');
-    document.getElementById('nav-inventory').classList.add('text-slate-600');
-
-    document.getElementById(`nav-${pageId}`).classList.add('bg-blue-50', 'text-blue-600');
-    document.getElementById(`nav-${pageId}`).classList.remove('text-slate-600');
+    document.getElementById('nav-dashboard').classList.remove('active');
+    document.getElementById('nav-inventory').classList.remove('active');
+    document.getElementById(`nav-${pageId}`).classList.add('active');
 
     if (pageId === 'dashboard') loadDashboard();
     if (pageId === 'inventory') loadInventory();
@@ -83,9 +79,9 @@ function renderChart(categories) {
             datasets: [{
                 data: values,
                 backgroundColor: [
-                    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'
+                    '#ffd43b', '#e67e22', '#2c3e50', '#7f8c8d', '#f1c40f', '#d35400', '#34495e'
                 ],
-                borderWidth: 0
+                borderColor: '#1a1a1a',
             }]
         },
         options: {
@@ -113,21 +109,42 @@ async function loadInventory() {
         products.forEach(p => {
             const isLowStock = p.quantity <= p.min_threshold;
             const statusBadge = isLowStock
-                ? `<span class="bg-red-100 text-red-700 px-2 py-1 rounded-md text-xs font-bold">Low Stock</span>`
-                : `<span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-xs font-bold">In Stock</span>`;
+                ? `<span class="bg-red-500/10 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold border border-red-500/20 uppercase">Critical Stock</span>`
+                : `<span class="bg-green-500/10 text-green-400 px-2 py-0.5 rounded text-[10px] font-bold border border-green-500/20 uppercase">In Stock</span>`;
 
             const tr = document.createElement('tr');
-            tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+            tr.className = 'hover:bg-white/2 transition border-b border-white/5';
             tr.innerHTML = `
-                <td class="p-4 font-mono text-slate-400">#${p.id}</td>
-                <td class="p-4 font-medium text-slate-800">${p.name}</td>
-                <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs">${p.category}</span></td>
-                <td class="p-4 font-semibold text-slate-700">${new Intl.NumberFormat('th-TH').format(p.price)}</td>
-                <td class="p-4 ${isLowStock ? 'text-red-600 font-bold' : ''}">${p.quantity}</td>
+                <td class="p-4 font-mono text-[10px] text-slate-500">ID-${p.id.toString().padStart(4, '0')}</td>
+                <td class="p-4">
+                    <div class="font-bold text-white">${p.name}</div>
+                    <div class="text-[10px] text-slate-500">Premium PC Component</div>
+                </td>
+                <td class="p-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/5 border border-white/5 text-slate-400">
+                        ${p.category}
+                    </span>
+                </td>
+                <td class="p-4 font-bold ihave-gold">฿${new Intl.NumberFormat('th-TH').format(p.price)}</td>
+                <td class="p-4">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold ${isLowStock ? 'text-red-400' : 'text-green-400'}">${p.quantity}</span>
+                        <div class="w-12 bg-white/5 h-1 rounded-full overflow-hidden">
+                            <div class="h-full ${isLowStock ? 'bg-red-500' : 'bg-green-500'}" 
+                                 style="width: ${Math.min((p.quantity / (p.min_threshold || 1)) * 50, 100)}%"></div>
+                        </div>
+                    </div>
+                </td>
                 <td class="p-4">${statusBadge}</td>
                 <td class="p-4 text-center">
-                    <button onclick='editProduct(${JSON.stringify(p)})' class="text-blue-500 hover:text-blue-700 mx-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-700 mx-1"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex justify-center gap-3">
+                        <button onclick='editProduct(${JSON.stringify(p)})' class="text-slate-400 hover:text-[#ffd43b] transition">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-red-500 transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);

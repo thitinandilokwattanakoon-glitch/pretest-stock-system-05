@@ -16,9 +16,12 @@ const categories = [
 ];
 
 const gamesData = [
-    { id: 'valorant', name: 'Valorant / CS:GO', tier: 'entry', icon: 'fa-crosshairs' },
-    { id: 'elden_ring', name: 'Elden Ring', tier: 'mid', icon: 'fa-dragon' },
-    { id: 'cyberpunk', name: 'Cyberpunk 2077', tier: 'high', icon: 'fa-robot' }
+    { id: 'valorant', name: 'VALORANT', tier: 'entry', icon: 'fa-crosshairs' },
+    { id: 'lol', name: 'League of Legends', tier: 'entry', icon: 'fa-khanda' },
+    { id: 'genshin', name: 'Genshin Impact', tier: 'entry', icon: 'fa-wand-magic-sparkles' },
+    { id: 'gtav', name: 'Grand Theft Auto V', tier: 'mid', icon: 'fa-car' },
+    { id: 'rdr2', name: 'Red Dead Redemption 2', tier: 'high', icon: 'fa-horse' },
+    { id: 'spacemarine2', name: 'Space Marine 2', tier: 'high', icon: 'fa-shield-halved' }
 ];
 
 const compatibilityRules = {
@@ -50,6 +53,26 @@ async function initBuilder() {
     renderGameSelector();
     renderSlots();
     await fetchProducts();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const preset = urlParams.get('preset');
+    const build = urlParams.get('build');
+
+    if (preset) {
+        applyGamePreset(preset);
+    } else if (build) {
+        // Handle shared build
+        try {
+            const decoded = atob(build);
+            const pairs = decoded.split(',');
+            pairs.forEach(pair => {
+                const [catId, prodId] = pair.split(':');
+                const product = state.products.find(p => p.id == prodId);
+                if (product) state.components[catId] = product;
+            });
+            renderSlots();
+        } catch (e) { console.error('Error decoding build', e); }
+    }
 }
 
 function renderGameSelector() {
@@ -115,21 +138,21 @@ function renderSlots() {
         const warning = checkItemCompatibility(cat.id, selected);
 
         return `
-            <div class="component-slot bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex items-center gap-4 ${selected ? 'border-blue-500 ring-1 ring-blue-500' : ''}" onclick="openSelection('${cat.id}')">
-                <div class="w-12 h-12 rounded-lg ${selected ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'} flex items-center justify-center text-xl shrink-0">
+            <div class="component-slot p-4 rounded-xl cursor-pointer flex items-center gap-4 ${selected ? 'active' : ''}" onclick="openSelection('${cat.id}')">
+                <div class="w-12 h-12 rounded-lg ${selected ? 'bg-[#ffd43b]/10 text-[#ffd43b]' : 'bg-white/5 text-slate-500'} flex items-center justify-center text-xl shrink-0">
                     <i class="fa-solid ${cat.icon}"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">${cat.name}</p>
-                    <h3 class="font-bold text-slate-800 truncate">${selected ? selected.name : 'Select ' + cat.name}</h3>
-                    ${selected ? `<p class="text-xs text-blue-600 mt-0.5">${formatSpecs(selected)}</p>` : ''}
+                    <p class="text-[10px] font-bold ${selected ? 'text-[#ffd43b]' : 'text-slate-500'} uppercase tracking-widest">${cat.name}</p>
+                    <h3 class="font-bold ${selected ? 'text-white' : 'text-slate-400'} truncate">${selected ? selected.name : 'Choose ' + cat.name}</h3>
+                    ${selected ? `<p class="text-xs text-slate-400 mt-0.5">${formatSpecs(selected)}</p>` : ''}
                     ${warning ? `<p class="text-[10px] text-red-500 mt-1 font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> ${warning}</p>` : ''}
                 </div>
                 <div class="text-right">
                     ${selected ?
-                `<p class="font-bold text-blue-600">฿${parseFloat(selected.price).toLocaleString()}</p>
-                         <button onclick="event.stopPropagation(); removeComponent('${cat.id}')" class="text-xs text-red-400 hover:text-red-600 mt-1">Remove</button>`
-                : '<span class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition"><i class="fa-solid fa-plus"></i></span>'}
+                `<p class="font-bold ihave-gold text-lg">฿${parseFloat(selected.price).toLocaleString()}</p>
+                         <button onclick="event.stopPropagation(); removeComponent('${cat.id}')" class="text-[10px] uppercase font-bold text-red-400 hover:text-red-500 mt-1 transition">Delete</button>`
+                : '<span class="w-8 h-8 rounded-full bg-white/5 text-slate-500 flex items-center justify-center hover:bg-[#ffd43b] hover:text-black transition-all"><i class="fa-solid fa-plus text-xs"></i></span>'}
                 </div>
             </div>
         `;
@@ -264,24 +287,24 @@ function renderProductList(products, suggestions) {
 function renderProductCard(p, isSuggested) {
     const specsStr = formatSpecs(p);
     return `
-        <div onclick="selectProduct(${p.id})" class="bg-white p-4 rounded-xl border ${isSuggested ? 'border-blue-400 bg-blue-50/30' : 'border-slate-200'} hover:border-blue-400 cursor-pointer transition mb-3 flex justify-between items-center group relative overflow-hidden">
-            ${isSuggested ? '<div class="absolute top-0 right-0 bg-blue-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">TOP PICK</div>' : ''}
+        <div onclick="selectProduct(${p.id})" class="ihave-bg-surface p-4 rounded-xl border ${isSuggested ? 'border-[#ffd43b] shadow-[0_0_15px_rgba(255,212,59,0.1)]' : 'border-white/10'} hover:border-[#ffd43b] cursor-pointer transition-all mb-3 flex justify-between items-center group relative overflow-hidden">
+            ${isSuggested ? '<div class="absolute top-0 right-0 bg-[#ffd43b] text-black text-[8px] font-bold px-2 py-0.5 rounded-bl-lg animate-pulse">RECOMMENDED</div>' : ''}
             <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-box text-slate-300 group-hover:text-blue-500 transition"></i>
+                <div class="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center shrink-0 border border-white/5">
+                    <i class="fa-solid fa-box text-slate-600 group-hover:text-[#ffd43b] transition"></i>
                 </div>
                 <div class="min-w-0">
-                    <h4 class="font-bold text-slate-800 truncate">${p.name}</h4>
+                    <h4 class="font-bold text-white group-hover:text-[#ffd43b] transition truncate">${p.name}</h4>
                     <p class="text-xs text-slate-500 mt-1">${specsStr}</p>
                     <div class="mt-1 flex gap-2">
-                        <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600">Stock: ${p.quantity}</span>
-                        ${p.warranty_months ? `<span class="text-[10px] bg-green-50 px-2 py-0.5 rounded text-green-600">Warranty: ${p.warranty_months}m</span>` : ''}
+                        <span class="text-[10px] bg-white/5 border border-white/5 px-2 py-0.5 rounded text-slate-400">Inventory: ${p.quantity}</span>
+                        ${p.warranty_months ? `<span class="text-[10px] bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded text-[#ffd43b]">Warranty: ${p.warranty_months}m</span>` : ''}
                     </div>
                 </div>
             </div>
             <div class="text-right shrink-0">
-                <p class="font-bold text-blue-600 text-lg">฿${parseFloat(p.price).toLocaleString()}</p>
-                <button class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-medium group-hover:bg-blue-600 group-hover:text-white transition mt-1">Select</button>
+                <p class="font-bold ihave-gold text-lg">฿${parseFloat(p.price).toLocaleString()}</p>
+                <button class="text-[10px] font-bold uppercase bg-white/5 text-slate-400 px-3 py-1.5 rounded-lg group-hover:bg-[#ffd43b] group-hover:text-black transition mt-1">Select Part</button>
             </div>
         </div>
     `;
@@ -335,9 +358,81 @@ function updateSummary() {
     document.getElementById('header-total-price').innerText = total.toLocaleString();
     document.getElementById('summary-total-price').innerText = total.toLocaleString();
 
-    const filledCount = Object.keys(state.components).length;
-    const totalSlots = categories.length;
-    document.getElementById('progress-bar').style.width = `${(filledCount / totalSlots) * 100}%`;
+    const filledCount = Object.keys(state.components)
+        .filter(key => !['monitor', 'gaminggear'].includes(key)).length;
+    const coreSlots = categories.filter(cat => !['monitor', 'gaminggear'].includes(cat.id)).length;
+    document.getElementById('progress-bar').style.width = `${(filledCount / coreSlots) * 100}%`;
+
+    // Share link update (optional: could update a hidden input or similar)
+    updateFPSPredictions();
+}
+
+function generateShareLink() {
+    const ids = Object.entries(state.components)
+        .filter(([k, v]) => v)
+        .map(([k, v]) => `${k}:${v.id}`)
+        .join(',');
+
+    if (!ids) {
+        alert('Build a PC first before sharing!');
+        return;
+    }
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?build=${btoa(ids)}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Shareable Build Link copied to clipboard!');
+    });
+}
+
+function updateFPSPredictions() {
+    const cpu = state.components['cpu'];
+    const gpu = state.components['gpu'];
+
+    if (!cpu || !gpu) {
+        document.getElementById('fps-valorant').innerText = '0';
+        document.getElementById('fps-cyberpunk').innerText = '0';
+        return;
+    }
+
+    let valoFPS = 150;
+    let cyberFPS = 0;
+
+    // CPU Multiplier (Valorant is CPU bound)
+    const cpuName = cpu.name.toUpperCase();
+    if (cpuName.includes('I3') || cpuName.includes('RYZEN 3')) valoFPS *= 1.0;
+    else if (cpuName.includes('I5') || cpuName.includes('RYZEN 5')) valoFPS *= 1.8;
+    else if (cpuName.includes('I7') || cpuName.includes('RYZEN 7')) valoFPS *= 2.5;
+    else if (cpuName.includes('I9') || cpuName.includes('RYZEN 9')) valoFPS *= 3.0;
+
+    // GPU Multiplier (Cyberpunk is GPU bound)
+    const gpuName = gpu.name.toUpperCase();
+    if (gpuName.includes('RTX 4090') || gpuName.includes('RX 7900')) {
+        valoFPS += 200;
+        cyberFPS = 120;
+    } else if (gpuName.includes('RTX 4080') || gpuName.includes('RTX 4070')) {
+        valoFPS += 150;
+        cyberFPS = 90;
+    } else if (gpuName.includes('RTX 4060') || gpuName.includes('RTX 3060')) {
+        valoFPS += 100;
+        cyberFPS = 60;
+    } else if (gpuName.includes('GTX') || gpuName.includes('RX 6400')) {
+        valoFPS += 20;
+        cyberFPS = 25;
+    }
+
+    document.getElementById('fps-valorant').innerText = Math.round(valoFPS);
+    document.getElementById('fps-cyberpunk').innerText = Math.round(cyberFPS);
+
+    // Dynamic color for FPS
+    const valoElem = document.getElementById('fps-valorant').parentElement;
+    if (valoFPS > 240) valoElem.className = 'text-sm font-bold text-yellow-400';
+    else if (valoFPS > 144) valoElem.className = 'text-sm font-bold text-green-400';
+    else valoElem.className = 'text-sm font-bold text-slate-400';
+
+    const cyberElem = document.getElementById('fps-cyberpunk').parentElement;
+    if (cyberFPS >= 60) cyberElem.className = 'text-sm font-bold text-green-400';
+    else if (cyberFPS >= 30) cyberElem.className = 'text-sm font-bold text-yellow-400';
+    else cyberElem.className = 'text-sm font-bold text-red-400';
 }
 
 function proceedToCheckout() {
